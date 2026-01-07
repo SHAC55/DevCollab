@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+/design
+/mockups
+IMP Notes.txt
+
+.env
+assest/

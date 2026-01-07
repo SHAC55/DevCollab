@@ -1,6 +1,9 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+
+  const navigate =  useNavigate()
   return (
     <section className="w-full flex justify-center px-6 py-10">
       {/* Outer Card */}
@@ -28,11 +31,11 @@ const Hero = () => {
               </p>
 
               <div className="mt-8 flex flex-wrap gap-4">
-                <button className="rounded-full bg-indigo-500 px-7 py-3 text-white font-medium shadow-md hover:bg-indigo-600 transition">
+                <button onClick={() => navigate('/sign-up')} className="rounded-full bg-indigo-500 px-7 py-3 text-white font-medium shadow-md hover:bg-indigo-600 transition">
                   Get DevCollab for free
                 </button>
 
-                <button className="rounded-full border border-slate-300 bg-white px-7 py-3 text-slate-700 font-medium hover:bg-slate-100 transition">
+                <button onClick={() => navigate('/sign-in')} className="rounded-full border border-slate-300 bg-white px-7 py-3 text-slate-700 font-medium hover:bg-slate-100 transition">
                   Sign In
                 </button>
               </div>
