@@ -5,13 +5,16 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/authContext.jsx";
 import { ProblemProvider } from "./context/problemContext.jsx";
+import { SolutionProvider } from "./context/solutionContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <ProblemProvider>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </ProblemProvider>
+    <AuthProvider>
+      <SolutionProvider>
+        <ProblemProvider>
+          <App />
+        </ProblemProvider>
+      </SolutionProvider>
+    </AuthProvider>
   </BrowserRouter>
 );

@@ -1,0 +1,18 @@
+** API Endpoints **
+
+1. API for  authentication
+
+/api/auth/register
+/api/auth/login
+
+2. API for problems
+
+/api/problem/post
+/api/problem/active-problems
+/api/problem/myproblems
+/api/problem/:id
+
+3. API for  solution
+
+/api/solution/submit-solution/:problemId
+/api/solution/get-solutions/:problemId

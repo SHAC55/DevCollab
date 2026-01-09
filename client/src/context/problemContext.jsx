@@ -60,7 +60,7 @@ export const ProblemProvider = ({ children }) => {
   };
 
   // problem by id
-   const fetchProblemById = async (problemId) => {
+   const fetchProblemById = async (problemId,solutionId) => {
     try {
       setLoading(true);
       const { data } = await axios.get(

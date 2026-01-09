@@ -4,6 +4,7 @@ import cors from "cors";
 import connectDB from "./config/DBconnection.js";
 import authRouter from "./routes/auth.routes.js";
 import problemRouter from "./routes/problem.routes.js";
+import solutionRouter from "./routes/solution.routes.js";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.get("/", (req, res) => {
 // API ENDPOINT
 app.use("/api/auth",authRouter);
 app.use("/api/problem",problemRouter)
+app.use("/api/solution",solutionRouter);
 
 // Start the server
 app.listen(PORT, () => {
