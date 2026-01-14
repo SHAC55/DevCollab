@@ -12,6 +12,10 @@ import Explore from "./pages/Explore";
 import PostProblem from "./pages/PostProblem";
 import Account from "./pages/Account";
 import ProblemDetails from "./pages/ProblemDetails";
+import SolutionSubmission from "./pages/SolutionSubmission";
+import BidSubmission from "./pages/BidSubmission";
+import Chat from "./pages/Chat";
+
 
 const App = () => {
   return (
@@ -27,6 +31,10 @@ const App = () => {
         <Route path="/post-problem" element={<PostProblem />} />
         <Route path="/account" element={<Account />} />
         <Route path="/problem/:id" element={<ProblemDetails />} />
+        <Route path="/problems/:id" element={<ProblemDetails />} />
+        <Route path="/problems/:id/submit-solution" element={<SolutionSubmission/>} />
+        <Route path="/problems/:id/apply-bid" element={<BidSubmission/>} />
+        <Route path="/problem/chat/:problemId" element={<Chat />} />
       </Routes>
     </>
   );

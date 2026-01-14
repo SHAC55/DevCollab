@@ -45,9 +45,14 @@ const problemSchema = new mongoose.Schema(
       },
     },
 
+    bids:{
+      type:Number,
+      default:0,
+    },
+
     status: {
       type: String,
-      enum: ["open", "solved"],
+      enum: ["open", "in-progress","solved"],
       default: "open",
     },
 

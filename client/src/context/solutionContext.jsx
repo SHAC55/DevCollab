@@ -2,11 +2,12 @@ import { createContext, useContext, useState } from "react";
 import axios from "axios";
 import { useAuth } from "./authContext";
 import { toast } from "react-toastify";
+import api from "../api/axios";
+
 
 const SolutionContext = createContext();
 
 export const SolutionProvider = ({ children }) => {
-
   const [solutions, setSolutions] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +18,7 @@ export const SolutionProvider = ({ children }) => {
   const getSolutionsByProblem = async (problemId) => {
     try {
       setLoading(true);
-      const res = await axios.get(
+      const res = await api.get(
         `${API_BASE_URL}/solution/get-solutions/${problemId}`
       );
       setSolutions(res.data.solutions);
@@ -33,7 +34,7 @@ export const SolutionProvider = ({ children }) => {
   // Submit solution
   const submitSolution = async (problemId, solutionData) => {
     try {
-      const res = await axios.post(
+      const res = await api.post(
         `${API_BASE_URL}/solution/submit-solution/${problemId}`,
         solutionData,
         {
@@ -55,42 +56,101 @@ export const SolutionProvider = ({ children }) => {
   };
 
   // addReactions
-  const addReaction =  async(solutionId,type) => {
+  const addReaction = async (solutionId, type) => {
     try {
-
-      const res =  await axios.post(`${API_BASE_URL}/solution/react/${solutionId}`,
+      const res = await api.post(
+        `${API_BASE_URL}/solution/react/${solutionId}`,
         { type },
         {
-          headers  :{
-            Authorization : `Bearer ${token}`
-          }
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      )
+      );
 
       // update only that solution in state
-      setSolutions((prev) => // from all solution
-      prev.map((sol) => 
-        sol._id === solutionId // from  all details  of  solution we  want  id  and  match  it  with solutionId
-          ? {
-              ...sol, // rest  data  will  be same  update  like
-              likes: res.data.likes,
-              dislikes: res.data.dislikes,
-              currentUserReaction: res.data.currentUserReaction,
-            }
-          : sol
-      )
-    );
+      setSolutions(
+        (
+          prev // from all solution
+        ) =>
+          prev.map((sol) =>
+            sol._id === solutionId // from  all details  of  solution we  want  id  and  match  it  with solutionId
+              ? {
+                  ...sol, // rest  data  will  be same  update  like
+                  likes: res.data.likes,
+                  dislikes: res.data.dislikes,
+                  currentUserReaction: res.data.currentUserReaction,
+                }
+              : sol
+          )
+      );
 
-    toast.success("Reaction updated")
+      toast.success("Reaction updated");
 
-    return res.data ;
-
+      return res.data;
     } catch (error) {
       console.error(error);
       toast.error(err.response?.data?.message || "Failed to react");
       throw err;
     }
+  };
+
+  // addBid
+  const addBid = async (problemId, bidData) => {
+    try {
+      const res = await api.post(
+        `${API_BASE_URL}/bid/applyforbid/${problemId}`,
+        bidData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("Bid placed successfully");
+      return res.data.newBid;
+    } catch (err) {
+      console.error("Add bid error:", err);
+      toast.error(err.response?.data?.message || "Failed to place bid");
+      throw err;
+    }
+  };
+
+  // get  allBids by problem 
+  const getAllBidsByProblem = async (problemId) => {
+    try {
+      const res = await api.get(`${API_BASE_URL}/bid/allbids/${problemId}`);
+
+      return res.data.allBids;
+    } catch (err) {
+      console.error("Get bids error:", err);
+      throw err;
+    }
+  };
+
+  // selectBid by owner
+const selectBid = async (problemId, bidId) => {
+  try {
+    const res = await api.patch(
+      `${API_BASE_URL}/bid/select/${problemId}/${bidId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    toast.success("Bid selected successfully");
+    return res.data;
+  } catch (err) {
+    console.error("Select bid error:", err);
+    toast.error(err.response?.data?.message || "Failed to select bid");
+    throw err;
   }
+};
+
 
   return (
     <SolutionContext.Provider
@@ -99,7 +159,10 @@ export const SolutionProvider = ({ children }) => {
         loading,
         getSolutionsByProblem,
         submitSolution,
-        addReaction
+        addReaction,
+        addBid,
+        getAllBidsByProblem,
+        selectBid
       }}
     >
       {children}

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import api from "../api/axios";
 
 
 const ProblemContext = createContext(null);
@@ -17,8 +18,8 @@ export const ProblemProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      const { data } = await axios.get(
-        `${API_BASE_URL}/problem/active-problems`
+      const { data } = await api.get(
+        `/problem/active-problems`
       );
 
       if (data.success) {
@@ -32,14 +33,14 @@ export const ProblemProvider = ({ children }) => {
     }
   };
 
-  // NEW: create problem
+  // create problem
   const createProblem = async (payload) => {
     try {
       setLoading(true);
       setError(null);
 
-      const { data } = await axios.post(
-        `${API_BASE_URL}/problem/post`,
+      const { data } = await api.post(
+        `/problem/post`,
         payload,
         { withCredentials: true } // if using auth cookies
       );
@@ -63,8 +64,8 @@ export const ProblemProvider = ({ children }) => {
    const fetchProblemById = async (problemId,solutionId) => {
     try {
       setLoading(true);
-      const { data } = await axios.get(
-        `${API_BASE_URL}/problem/${problemId}`
+      const { data } = await api.get(
+        `/problem/${problemId}`
       );
       return data;
     } catch (err) {

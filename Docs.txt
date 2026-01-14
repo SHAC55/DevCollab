@@ -12,7 +12,14 @@
 /api/problem/myproblems
 /api/problem/:id
 
-3. API for  solution
+3. API for solution
 
 /api/solution/submit-solution/:problemId
 /api/solution/get-solutions/:problemId
+/api/solution/react/:sloutionId
+
+4.  API for bids
+
+/api/bid/applyforbid/:problemId
+/api/bid/allbids/:problemId
+/api/bid/selectbid/:problemId

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import api from "../api/axios";
 
 const AuthContext = createContext(null);
 
@@ -30,7 +31,7 @@ export const AuthProvider = ({ children }) => {
 
   // 🔐 LOGIN
   const login = async (email, password) => {
-    const { data } = await axios.post("http://localhost:5000/api/auth/login", {
+    const { data } = await api.post("/auth/login", {
       email,
       password,
     });
@@ -52,7 +53,7 @@ export const AuthProvider = ({ children }) => {
 
   // 📝 REGISTER
   const register = async (formData) => {
-    const { data } = await axios.post("http://localhost:5000/api/auth/register", formData);
+    const { data } = await api.post("/auth/register", formData);
 
     if (!data.success) {
       throw new Error(data.message || "Registration failed");
