@@ -10,6 +10,7 @@ import problemRouter from "./routes/problem.routes.js";
 import solutionRouter from "./routes/solution.routes.js";
 import bidRouter from "./routes/bid.routes.js";
 import chatModel from "./models/chatModel.js";
+import leaderBoardRouter from "./routes/leaderboard.routes.js";
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/problem", problemRouter);
 app.use("/api/solution", solutionRouter);
 app.use("/api/bid", bidRouter);
+app.use("/api/leaderboard",leaderBoardRouter)
 
 // ================= SOCKET LOGIC =================
 

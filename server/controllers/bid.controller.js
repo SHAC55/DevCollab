@@ -139,7 +139,10 @@ export const selectBidByProblem = async (req, res) => {
     await bid.save();
 
     //  Mark problem as solved
-    problem.status = "in-progress";
+    await problemModel.findByIdAndUpdate(problemId, {
+      status: "in-progress",
+    });
+
     await problem.save();
 
     return res.status(200).json({

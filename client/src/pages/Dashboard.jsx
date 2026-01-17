@@ -29,9 +29,12 @@ import {
   Share2,
   Download,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
+
+ 
 
   // Dummy data
   const stats = [
@@ -44,6 +47,7 @@ const Dashboard = () => {
       color: "bg-emerald-500",
       bgColor: "bg-emerald-50",
       iconColor: "text-emerald-600",
+      
     },
     {
       title: "In Progress",
@@ -74,6 +78,7 @@ const Dashboard = () => {
       color: "bg-amber-500",
       bgColor: "bg-amber-50",
       iconColor: "text-amber-600",
+      route:'/manageproblems'
     },
   ];
 
@@ -136,6 +141,8 @@ const Dashboard = () => {
     { title: "Bid Submission", date: "Nov 18", time: "5:00 PM" },
   ];
 
+   const  navigate  =  useNavigate()
+
   return (
     <div className="bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.12),transparent_40%),linear-gradient(120deg,#f3ecff,#eef3ff,#ffffff)] min-h-screen">
       <Navbar />
@@ -167,6 +174,7 @@ const Dashboard = () => {
           {stats.map((stat, index) => (
             <div
               key={index}
+              onClick={() => stat.route && navigate(stat.route)}
               className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center justify-between mb-4">

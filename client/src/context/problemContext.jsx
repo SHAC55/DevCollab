@@ -3,7 +3,6 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import api from "../api/axios";
 
-
 const ProblemContext = createContext(null);
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -12,16 +11,17 @@ export const ProblemProvider = ({ children }) => {
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [myProblems, setMyProblems] = useState([]);
+
+  const token = localStorage.getItem("token");
 
   const fetchActiveProblems = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const { data } = await api.get(
-        `/problem/active-problems`
-      );
-
+      const { data } = await api.get(`/problem/active-problems`);
+      console.log(data.problems)
       if (data.success) {
         setProblems(data.problems);
       }
@@ -39,11 +39,11 @@ export const ProblemProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      const { data } = await api.post(
-        `/problem/post`,
-        payload,
-        { withCredentials: true } // if using auth cookies
-      );
+      const { data } = await api.post(`/problem/post`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (data.success) {
         // optional: add to top of list instantly
@@ -61,15 +61,31 @@ export const ProblemProvider = ({ children }) => {
   };
 
   // problem by id
-   const fetchProblemById = async (problemId,solutionId) => {
+  const fetchProblemById = async (problemId, solutionId) => {
     try {
       setLoading(true);
-      const { data } = await api.get(
-        `/problem/${problemId}`
-      );
+      const { data } = await api.get(`/problem/${problemId}`);
       return data;
     } catch (err) {
       throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // get  all user problems
+  const getAllUserProblems = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/problem/myproblems", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setMyProblems(res.data.problems);
+      console.log("My problems:", res.data.problems);
+    } catch (error) {
+      console.error("Fetch my problems error:", error);
     } finally {
       setLoading(false);
     }
@@ -83,6 +99,8 @@ export const ProblemProvider = ({ children }) => {
         fetchActiveProblems,
         createProblem,
         fetchProblemById,
+        myProblems,
+        getAllUserProblems,
       }}
     >
       {children}

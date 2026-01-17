@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema(
       },
     },
 
+    bio:{
+      type:String,
+      minlength:30,
+    },
+
     profession: {
       type: String,
       enum: [
@@ -36,6 +41,21 @@ const userSchema = new mongoose.Schema(
         "Student",
         "Freelancer",
       ],
+    },
+
+    reputationPoints:{
+      type:Number,
+      default:0,
+    },
+
+    communityPoints:{
+      type:Number,
+      default:0,
+    },
+
+    collabPoints:{
+      type:Number,
+      default:0,
     },
 
     github: {
@@ -68,4 +88,13 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+
+// for  leaderboard query  
+userSchema.index({ reputationPoints: -1 });
+userSchema.index({ collabPoints: -1 });
+userSchema.index({ communityPoints: -1 });
+
+
 export default mongoose.model("User", userSchema);
+
+

@@ -1,5 +1,6 @@
 import problemModel from "../models/problemModel.js";
 import solutionModel from "../models/solutionModel.js";
+import userModel from "../models/userModel.js";
 
 export const submitSolution = async (req, res) => {
   try {
@@ -70,78 +71,88 @@ export const getAllSolutionsByProblem = async (req, res) => {
 export const reactionToSolution = async (req, res) => {
   try {
     const { solutionId } = req.params;
-    const { type } = req.body; // "like" or "dislike"
-    const userId = req.user.id;
+    const { type } = req.body;
+    const userId = req.user._id || req.user.id;
 
     if (!["like", "dislike"].includes(type)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid reaction type" });
+      return res.status(400).json({ success: false, message: "Invalid reaction type" });
     }
 
     const solution = await solutionModel.findById(solutionId);
     if (!solution) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Solution not found" });
+      return res.status(404).json({ success: false, message: "Solution not found" });
     }
 
-    // find existing reaction by this user
+    const solutionOwner = await userModel.findById(solution.userId);
+    if (!solutionOwner) {
+      return res.status(404).json({ success: false, message: "Solution owner not found" });
+    }
+
     const existingReactionIndex = solution.reactions.findIndex(
-      (r) => r.userId.toString() === userId
+      (r) => r.userId.toString() === userId.toString()
     );
 
-    // ✅ CASE 1: No previous reaction → add new
+    // CASE 1: New reaction
     if (existingReactionIndex === -1) {
       solution.reactions.push({ userId, type });
 
-      if (type === "like") solution.likes += 1;
-      else solution.dislikes += 1;
+      if (type === "like") {
+        solution.likes += 1;
+        solutionOwner.communityPoints += 1;
+      } else {
+        solution.dislikes += 1;
+      }
     }
 
-    // ✅ CASE 2 & 3: User already reacted
     else {
       const existingReaction = solution.reactions[existingReactionIndex];
 
-      // CASE 2: Same reaction clicked again → remove (toggle off)
+      // CASE 2: Toggle off
       if (existingReaction.type === type) {
         solution.reactions.splice(existingReactionIndex, 1);
 
-        if (type === "like") solution.likes -= 1;
-        else solution.dislikes -= 1;
+        if (type === "like") {
+          solution.likes -= 1;
+          solutionOwner.communityPoints -= 1;
+        } else {
+          solution.dislikes -= 1;
+        }
       }
 
-      // CASE 3: Opposite reaction → switch
+      // CASE 3: Switch
       else {
-        // update reaction type
-        existingReaction.type = type;
-
-        if (type === "like") {
-          solution.likes += 1;
-          solution.dislikes -= 1;
-        } else {
-          solution.dislikes += 1;
+        if (existingReaction.type === "like" && type === "dislike") {
           solution.likes -= 1;
+          solution.dislikes += 1;
+          solutionOwner.communityPoints -= 1;
         }
+
+        if (existingReaction.type === "dislike" && type === "like") {
+          solution.dislikes -= 1;
+          solution.likes += 1;
+          solutionOwner.communityPoints += 1;
+        }
+
+        existingReaction.type = type;
       }
     }
 
-    await solution.save();
+    await Promise.all([solution.save(), solutionOwner.save()]);
 
-    // find current user reaction for UI
     const currentReaction = solution.reactions.find(
-      (r) => r.userId.toString() === userId
+      (r) => r.userId.toString() === userId.toString()
     );
 
     res.status(200).json({
       success: true,
-      message: "Reaction updated",
       likes: solution.likes,
       dislikes: solution.dislikes,
       currentUserReaction: currentReaction ? currentReaction.type : null,
     });
+
   } catch (error) {
     console.error("Error reacting to solution:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
+

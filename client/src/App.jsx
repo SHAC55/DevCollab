@@ -15,6 +15,8 @@ import ProblemDetails from "./pages/ProblemDetails";
 import SolutionSubmission from "./pages/SolutionSubmission";
 import BidSubmission from "./pages/BidSubmission";
 import Chat from "./pages/Chat";
+import ManageProblems from "./pages/ManageProblems";
+import Leaderboard from "./pages/Leaderboard";
 
 
 const App = () => {
@@ -35,6 +37,8 @@ const App = () => {
         <Route path="/problems/:id/submit-solution" element={<SolutionSubmission/>} />
         <Route path="/problems/:id/apply-bid" element={<BidSubmission/>} />
         <Route path="/problem/chat/:problemId" element={<Chat />} />
+        <Route path="/manageproblems" element={<ManageProblems/>}  />
+        <Route path="/leaderboard" element={<Leaderboard/>} />
       </Routes>
     </>
   );

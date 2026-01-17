@@ -32,6 +32,9 @@ const Navbar = () => {
           <NavLink to="/post-problem" className={navLinkClass}>
             Post a Problem
           </NavLink>
+          <NavLink to="/leaderboard" className={navLinkClass}>
+            Leaderboard
+          </NavLink>
           <NavLink to="/account" className={navLinkClass}>
             Account
           </NavLink>
@@ -72,6 +75,14 @@ const Navbar = () => {
               className={navLinkClass}
             >
               Post a Problem
+            </NavLink>
+
+            <NavLink
+              to="/leaderboard"
+              onClick={() => setMenuOpen(false)}
+              className={navLinkClass}
+            >
+              Leaderboard
             </NavLink>
 
             <NavLink

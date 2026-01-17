@@ -6,13 +6,16 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/authContext.jsx";
 import { ProblemProvider } from "./context/problemContext.jsx";
 import { SolutionProvider } from "./context/solutionContext.jsx";
+import { LeaderboardProvider } from "./context/leaderboardContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AuthProvider>
       <SolutionProvider>
         <ProblemProvider>
+          <LeaderboardProvider>
           <App />
+          </LeaderboardProvider>
         </ProblemProvider>
       </SolutionProvider>
     </AuthProvider>

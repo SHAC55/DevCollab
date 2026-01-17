@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // 🔐 LOGIN
+  // LOGIN
   const login = async (email, password) => {
     const { data } = await api.post("/auth/login", {
       email,
@@ -51,9 +51,10 @@ export const AuthProvider = ({ children }) => {
     setUser(data.user);
   };
 
-  // 📝 REGISTER
+  // REGISTER
   const register = async (formData) => {
-    const { data } = await api.post("/auth/register", formData);
+    try {
+      const { data } = await api.post("/auth/register", formData);
 
     if (!data.success) {
       throw new Error(data.message || "Registration failed");
@@ -68,6 +69,10 @@ export const AuthProvider = ({ children }) => {
 
     setToken(data.token);
     setUser(data.user);
+    } catch (error) {
+      console.error(error)
+    }
+    
   };
 
   // 🚪 LOGOUT
