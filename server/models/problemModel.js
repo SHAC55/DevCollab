@@ -28,7 +28,7 @@ const problemSchema = new mongoose.Schema(
 
     tags: {
       type: [String],
-      validate: [arr => arr.length <= 5, "Maximum 5 tags allowed"],
+      validate: [(arr) => arr.length <= 5, "Maximum 5 tags allowed"],
     },
 
     type: {
@@ -45,14 +45,14 @@ const problemSchema = new mongoose.Schema(
       },
     },
 
-    bids:{
-      type:Number,
-      default:0,
+    bids: {
+      type: Number,
+      default: 0,
     },
 
     status: {
       type: String,
-      enum: ["open", "in-progress","solved"],
+      enum: ["open", "in-progress","abandon","solved"],
       default: "open",
     },
 
@@ -61,9 +61,26 @@ const problemSchema = new mongoose.Schema(
       default: 0,
     },
 
-    selectedSolution: {
+    // selectedSolution: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "Solution",
+    // },
+
+    topSolutions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Solution",
+      },
+    ],
+
+    selectedBidder: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Solution",
+      ref: "User", // freelancer who won the bid
+    },
+
+    evaluation: {
+      qualityRating: { type: Number, min: 1, max: 5 },
+      deliveryOnTime: { type: Number, min: 1, max: 5 },
     },
   },
   { timestamps: true }

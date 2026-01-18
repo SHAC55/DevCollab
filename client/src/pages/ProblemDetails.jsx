@@ -212,8 +212,16 @@ const ProblemDetails = () => {
   }
 
   const isFree = problem.type === "free";
-  const isOwner =
-    user?.id === problem.userId || user?.id === problem.userId?._id;
+  const ownerId =
+    typeof problem.userId === "object" ? problem.userId._id : problem.userId;
+
+  const userId = user?._id;
+
+  const isOwner = userId === ownerId;
+
+  // console.log(isOwner);
+  // console.log(userId);
+  // console.log(ownerId);
 
   const difficultyColor = {
     easy: "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -534,7 +542,14 @@ const ProblemDetails = () => {
             </div>
           </div>
 
-          {isFree ? <AllSolutions /> : <AllBids />}
+          {isFree ? (
+            <AllSolutions
+              isOwner={isOwner}
+              topSolutions={problem.topSolutions || []}
+            />
+          ) : (
+            <AllBids />
+          )}
         </section>
       </main>
     </div>

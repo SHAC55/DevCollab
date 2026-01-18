@@ -1,4 +1,5 @@
 import problemModel from "../models/problemModel.js";
+import userModel from "../models/userModel.js";
 
 export const postProblem = async (req, res) => {
   try {
@@ -72,7 +73,8 @@ export const getProblemById = async (req, res) => {
     const problemId = req.params.id;
     const problem = await problemModel
       .findById(problemId)
-      .populate("userId", "username email");
+      .populate("userId", "username email")
+      .populate("topSolutions");
 
     if (!problem) {
       return res.status(404).json({
@@ -123,3 +125,109 @@ export const getUserAllProblems = async (req, res) => {
   }
 };
 
+// mark as solved
+export const markSolved = async (req, res) => {
+  try {
+    const { problemId } = req.params;
+
+    const ownerId = req.user.id;
+
+    const { qualityRating, deliveryOnTime } = req.body;
+
+    const problem = await problemModel
+      .findById(problemId)
+      .populate("selectedBidder")
+      .populate({
+        path: "topSolutions",
+        populate: { path: "userId", select: "_id" },
+      });
+
+    if (!problem) {
+      return res.status(404).json({
+        success: false,
+        message: "Problem not found",
+      });
+    }
+
+    //  Only owner can mark solved
+    if (problem.userId.toString() !== ownerId) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
+
+    let solverId;
+
+    /* ================= PAID PROBLEM ================= */
+    if (problem.type === "paid") {
+      if (!qualityRating || !deliveryOnTime) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Quality and delivery ratings are required for paid problems",
+        });
+      }
+
+      if (!problem.selectedBidder) {
+        return res.status(400).json({
+          success: false,
+          message: "No bidder selected for this paid problem",
+        });
+      }
+
+      solverId = problem.selectedBidder._id;
+
+      // save evaluation
+      problem.evaluation = {
+        qualityRating,
+        deliveryOnTime,
+      };
+
+      const reputationPoints = Number(qualityRating) + Number(deliveryOnTime);
+
+      await userModel.findByIdAndUpdate(solverId, {
+        $inc: {
+          reputationPoints,
+          collabPoints: 10,
+        },
+      });
+    } else {
+
+    /* ================= FREE PROBLEM ================= */
+      if (!problem.topSolutions || problem.topSolutions.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "No top solution selected for this free problem",
+        });
+      }
+
+      // top selected solution author
+      solverId = problem.topSolutions[0].userId._id;
+
+      await userModel.findByIdAndUpdate(solverId, {
+        $inc: {
+          communityPoints: 10,
+        },
+      });
+    }
+
+    // Mark problem solved
+    problem.status = "solved";
+    await problem.save();
+
+    return res.json({
+      success: true,
+      message:
+        problem.type === "paid"
+          ? "Paid problem solved and reputation updated"
+          : "Free problem solved and community points awarded",
+    });
+  } catch (error) {
+    console.error("Mark solved error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

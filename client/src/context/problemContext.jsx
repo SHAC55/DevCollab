@@ -90,6 +90,48 @@ export const ProblemProvider = ({ children }) => {
       setLoading(false);
     }
   };
+
+   const markSolved = async (problemId, payload = {}) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // payload = {} for FREE problem
+      // payload = { qualityRating, deliveryOnTime } for PAID
+
+      const { data } = await api.post(
+        `/problem/markedassolved/${problemId}`,
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (data.success) {
+        // update local states
+        setProblems((prev) =>
+          prev.map((p) =>
+            p._id === problemId ? { ...p, status: "solved" } : p
+          )
+        );
+
+        setMyProblems((prev) =>
+          prev.map((p) =>
+            p._id === problemId ? { ...p, status: "solved" } : p
+          )
+        );
+      }
+
+      return data;
+    } catch (err) {
+      console.error("Mark solved error:", err);
+      setError(err.response?.data?.message || "Failed to mark solved");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   return (
     <ProblemContext.Provider
       value={{
@@ -101,6 +143,7 @@ export const ProblemProvider = ({ children }) => {
         fetchProblemById,
         myProblems,
         getAllUserProblems,
+        markSolved
       }}
     >
       {children}

@@ -151,6 +151,27 @@ const selectBid = async (problemId, bidId) => {
   }
 };
 
+const selectTopSolutions = async (problemId, solutionIds) => {
+  try {
+    const res = await api.post(
+      `${API_BASE_URL}/solution/select-top/${problemId}`,
+      { solutionIds },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    toast.success("Top solutions selected");
+    return res.data;
+  } catch (err) {
+    console.error("Select top solutions error:", err);
+    toast.error(err.response?.data?.message || "Failed to select top solutions");
+    throw err;
+  }
+};
+
 
   return (
     <SolutionContext.Provider
@@ -162,7 +183,8 @@ const selectBid = async (problemId, bidId) => {
         addReaction,
         addBid,
         getAllBidsByProblem,
-        selectBid
+        selectBid,
+        selectTopSolutions
       }}
     >
       {children}

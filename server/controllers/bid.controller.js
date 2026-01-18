@@ -143,6 +143,7 @@ export const selectBidByProblem = async (req, res) => {
       status: "in-progress",
     });
 
+    problem.selectedBidder = bid.userId;
     await problem.save();
 
     return res.status(200).json({

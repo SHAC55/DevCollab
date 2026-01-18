@@ -156,3 +156,70 @@ export const reactionToSolution = async (req, res) => {
   }
 };
 
+export const selectTopSolution = async (req, res) => {
+  try {
+    const { problemId } = req.params;
+    const ownerId = req.user.id;
+    const { solutionIds } = req.body; // array of solution IDs
+
+    if (!Array.isArray(solutionIds) || solutionIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "solutionIds must be an array",
+      });
+    }
+
+    if (solutionIds.length > 3) {
+      return res.status(400).json({
+        success: false,
+        message: "You can select only top 3 solutions",
+      });
+    }
+
+    const problem = await problemModel.findById(problemId);
+    if (!problem) {
+      return res.status(404).json({
+        success: false,
+        message: "Problem not found",
+      });
+    }
+
+    //  Only owner can select top solutions
+    if (problem.userId.toString() !== ownerId) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
+
+    //  Validate solutions belong to this problem
+    const validSolutionsCount = await solutionModel.countDocuments({
+      _id: { $in: solutionIds },
+      problemId: problemId,
+    });
+
+    if (validSolutionsCount !== solutionIds.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Some solutions do not belong to this problem",
+      });
+    }
+
+    //  Save top solutions
+    problem.topSolutions = solutionIds;
+    await problem.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Top solutions selected successfully",
+      topSolutions: solutionIds,
+    });
+  } catch (error) {
+    console.error("Select top solution error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+

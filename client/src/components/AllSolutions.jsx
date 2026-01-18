@@ -6,31 +6,63 @@ import {
   ThumbsUp,
   ThumbsDown,
   Code2,
-  Award,
   GitBranch,
   CheckCircle,
   Star,
   Clock,
   ChevronDown,
   ChevronUp,
+  Trophy,
 } from "lucide-react";
 
-const AllSolutions = () => {
+const AllSolutions = ({ isOwner, topSolutions = [] }) => {
   const { id } = useParams();
-  const { solutions, loading, getSolutionsByProblem, addReaction } =
-    useSolution();
 
-  const [expanded, setExpanded] = useState({}); // { solutionId: true }
+  const {
+    solutions,
+    loading,
+    getSolutionsByProblem,
+    addReaction,
+    selectTopSolutions,
+  } = useSolution();
+
+  const [expanded, setExpanded] = useState({});
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  // ids of top solutions from backend
+  const topIds = topSolutions.map((s) => s._id);
 
   useEffect(() => {
     if (id) getSolutionsByProblem(id);
   }, [id]);
+
+  // sync backend top solutions with local state (for owner editing)
+  useEffect(() => {
+    setSelectedIds(topIds);
+  }, [topSolutions]);
 
   const toggleExpand = (solutionId) => {
     setExpanded((prev) => ({
       ...prev,
       [solutionId]: !prev[solutionId],
     }));
+  };
+
+  // ✅ OWNER: select top solutions (max 3) + SAVE TO DB
+  const toggleTopSolution = async (solutionId) => {
+    let updated;
+
+    if (selectedIds.includes(solutionId)) {
+      updated = selectedIds.filter((id) => id !== solutionId);
+    } else {
+      if (selectedIds.length >= 3) {
+        return alert("You can select maximum 3 top solutions");
+      }
+      updated = [...selectedIds, solutionId];
+    }
+
+    setSelectedIds(updated);
+    await selectTopSolutions(id, updated); // ✅ save to DB
   };
 
   if (loading) {
@@ -64,13 +96,18 @@ const AllSolutions = () => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {solutions.map((sol, index) => {
+      {solutions.map((sol) => {
         const isExpanded = expanded[sol._id];
+        const isTop = topIds.includes(sol._id);
 
         return (
           <div
             key={sol._id}
-            className="bg-white rounded-xl border hover:border-indigo-300 hover:shadow-md transition"
+            className={`bg-white rounded-xl border transition ${
+              isTop
+                ? "border-emerald-400 shadow-md"
+                : "hover:border-indigo-300 hover:shadow-md"
+            }`}
           >
             <div className="p-6">
               {/* HEADER */}
@@ -81,9 +118,9 @@ const AllSolutions = () => {
                       {sol.userId?.username?.[0]?.toUpperCase() || "U"}
                     </div>
 
-                    {index === 0 && solutions.length > 1 && (
-                      <div className="absolute -top-2 -right-2 w-7 h-7 bg-amber-500 rounded-full flex items-center justify-center">
-                        <Award className="w-3 h-3 text-white" />
+                    {isTop && (
+                      <div className="absolute -top-2 -right-2 w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center">
+                        <Trophy className="w-3 h-3 text-white" />
                       </div>
                     )}
                   </div>
@@ -118,14 +155,14 @@ const AllSolutions = () => {
                   </div>
                 </div>
 
-                {index === 0 && solutions.length > 1 && (
-                  <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-semibold">
-                    Top Solution
+                {isTop && (
+                  <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold">
+                    Top Selected
                   </span>
                 )}
               </div>
 
-              {/* DESCRIPTION (2 lines) */}
+              {/* DESCRIPTION */}
               <p
                 className={`text-gray-700 mb-2 whitespace-pre-wrap transition-all ${
                   isExpanded ? "" : "line-clamp-2"
@@ -134,7 +171,6 @@ const AllSolutions = () => {
                 {sol.description}
               </p>
 
-              {/* EXPAND BUTTON */}
               {sol.description.length > 120 && (
                 <button
                   onClick={() => toggleExpand(sol._id)}
@@ -153,7 +189,7 @@ const AllSolutions = () => {
               )}
 
               {/* ACTIONS */}
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center flex-wrap gap-3">
                 <div className="flex gap-3">
                   <button
                     onClick={() => addReaction(sol._id, "like")}
@@ -180,17 +216,33 @@ const AllSolutions = () => {
                   </button>
                 </div>
 
-                {sol.repoLink && (
-                  <a
-                    href={sol.repoLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-1 text-indigo-600 text-sm"
-                  >
-                    <GitBranch size={14} />
-                    Repo
-                  </a>
-                )}
+                <div className="flex items-center gap-3">
+                  {sol.repoLink && (
+                    <a
+                      href={sol.repoLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1 text-indigo-600 text-sm"
+                    >
+                      <GitBranch size={14} />
+                      Repo
+                    </a>
+                  )}
+
+                  {/* OWNER SELECT BUTTON */}
+                  {isOwner && (
+                    <button
+                      onClick={() => toggleTopSolution(sol._id)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${
+                        selectedIds.includes(sol._id)
+                          ? "bg-emerald-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
+                    >
+                      {selectedIds.includes(sol._id) ? "Selected" : "Select Top"}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

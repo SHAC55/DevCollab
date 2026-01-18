@@ -28,8 +28,9 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const ManageProblems = () => {
-  const { myProblems, getAllUserProblems, loading, updateProblemStatus } =
+  const { myProblems, getAllUserProblems, loading, updateProblemStatus,markSolved } =
     useProblem();
+
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,12 +52,42 @@ const ManageProblems = () => {
     if (myProblems) {
       setStats({
         total: myProblems.length,
-        open: myProblems.filter(p => p.status === "open").length,
-        inProgress: myProblems.filter(p => p.status === "in-progress").length,
-        solved: myProblems.filter(p => p.status === "solved").length,
+        open: myProblems.filter((p) => p.status === "open").length,
+        inProgress: myProblems.filter((p) => p.status === "in-progress").length,
+        solved: myProblems.filter((p) => p.status === "solved").length,
       });
     }
   }, [myProblems]);
+
+  const handleMarkSolved = async (e, problem) => {
+  e.stopPropagation();
+
+  try {
+    if (problem.type === "paid") {
+      const qualityRating = prompt("Rate solution quality (1–5):");
+      const deliveryOnTime = prompt("Rate delivery (1–5):");
+
+      if (!qualityRating || !deliveryOnTime) return;
+
+      await markSolved(problem._id, {
+        qualityRating: Number(qualityRating),
+        deliveryOnTime: Number(deliveryOnTime),
+      });
+    } else {
+      // FREE problem
+      if (!window.confirm("Mark this problem as solved and reward top solution?"))
+        return;
+
+      await markSolved(problem._id);
+    }
+
+    await getAllUserProblems(); // refresh list
+  } catch (err) {
+    console.error("Solve failed:", err);
+    alert("Failed to mark solved");
+  }
+};
+
 
   // ---------------- FILTER ----------------
   const filteredProblems = myProblems.filter((problem) => {
@@ -155,10 +186,10 @@ const ManageProblems = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
@@ -172,8 +203,12 @@ const ManageProblems = () => {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Problem Dashboard</h1>
-              <p className="text-gray-600 mt-2">Manage and track all your submitted problems</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Problem Dashboard
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Manage and track all your submitted problems
+              </p>
             </div>
             <button
               onClick={() => navigate("/problems/new")}
@@ -203,16 +238,27 @@ const ManageProblems = () => {
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className={`p-2.5 rounded-lg ${cfg.light}`}>
-                      <Icon className={cfg.color.replace('bg-', 'text-').split(' ')[0]} size={22} />
+                      <Icon
+                        className={
+                          cfg.color.replace("bg-", "text-").split(" ")[0]
+                        }
+                        size={22}
+                      />
                     </div>
-                    <div className={`text-xs font-medium px-3 py-1 rounded-full ${cfg.color} ${cfg.border}`}>
+                    <div
+                      className={`text-xs font-medium px-3 py-1 rounded-full ${cfg.color} ${cfg.border}`}
+                    >
                       {cfg.label}
                     </div>
                   </div>
                   <div className="flex items-baseline justify-between">
                     <div>
-                      <p className="text-3xl font-bold text-gray-900">{count}</p>
-                      <p className="text-sm text-gray-500 mt-1">Total Problems</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {count}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Total Problems
+                      </p>
                     </div>
                     <div className="text-xs text-gray-400 group-hover:text-gray-600 transition-colors">
                       View all →
@@ -230,7 +276,10 @@ const ManageProblems = () => {
           <div className="p-6 border-b border-gray-100">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               <div className="relative flex-1 w-full">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Search
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
                 <input
                   className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   placeholder="Search problems by title or description..."
@@ -249,11 +298,13 @@ const ManageProblems = () => {
                   >
                     <option value="all">All Types</option>
                     {Object.entries(typeConfig).map(([key, config]) => (
-                      <option key={key} value={key}>{config.label}</option>
+                      <option key={key} value={key}>
+                        {config.label}
+                      </option>
                     ))}
                   </select>
                 </div>
-                
+
                 <button
                   onClick={() => {
                     setSearchTerm("");
@@ -269,25 +320,42 @@ const ManageProblems = () => {
 
             {/* ACTIVE FILTERS */}
             <div className="flex items-center gap-2 mt-4">
-              {(statusFilter !== "all" || typeFilter !== "all" || searchTerm) && (
+              {(statusFilter !== "all" ||
+                typeFilter !== "all" ||
+                searchTerm) && (
                 <>
                   <span className="text-sm text-gray-500">Active filters:</span>
                   {statusFilter !== "all" && (
                     <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-700 rounded-full border border-blue-100">
                       Status: {statusConfig[statusFilter].label}
-                      <button onClick={() => setStatusFilter("all")} className="ml-1 text-blue-500 hover:text-blue-700">×</button>
+                      <button
+                        onClick={() => setStatusFilter("all")}
+                        className="ml-1 text-blue-500 hover:text-blue-700"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
                   {typeFilter !== "all" && (
                     <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-purple-50 text-purple-700 rounded-full border border-purple-100">
                       Type: {typeConfig[typeFilter]?.label || typeFilter}
-                      <button onClick={() => setTypeFilter("all")} className="ml-1 text-purple-500 hover:text-purple-700">×</button>
+                      <button
+                        onClick={() => setTypeFilter("all")}
+                        className="ml-1 text-purple-500 hover:text-purple-700"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
                   {searchTerm && (
                     <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-50 text-gray-700 rounded-full border border-gray-100">
                       Search: "{searchTerm}"
-                      <button onClick={() => setSearchTerm("")} className="ml-1 text-gray-500 hover:text-gray-700">×</button>
+                      <button
+                        onClick={() => setSearchTerm("")}
+                        className="ml-1 text-gray-500 hover:text-gray-700"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
                 </>
@@ -302,14 +370,21 @@ const ManageProblems = () => {
               <div className="flex flex-col items-center justify-center py-20">
                 <div className="relative">
                   <div className="w-16 h-16 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
-                  <Loader2 className="absolute inset-0 m-auto text-blue-500 animate-spin" size={24} />
+                  <Loader2
+                    className="absolute inset-0 m-auto text-blue-500 animate-spin"
+                    size={24}
+                  />
                 </div>
                 <p className="mt-4 text-gray-600">Loading your problems...</p>
               </div>
             ) : filteredProblems.length > 0 ? (
               filteredProblems.map((problem) => {
                 const status = statusConfig[problem.status];
-                const type = typeConfig[problem.type] || { label: problem.type, color: "bg-gray-100 text-gray-800", border: "border-gray-200" };
+                const type = typeConfig[problem.type] || {
+                  label: problem.type,
+                  color: "bg-gray-100 text-gray-800",
+                  border: "border-gray-200",
+                };
                 const StatusIcon = status.icon;
                 const TypeIcon = type.icon || FileText;
 
@@ -323,26 +398,35 @@ const ManageProblems = () => {
                       {/* LEFT SECTION */}
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
-                          <div className={`w-2 h-2 rounded-full ${status.dot}`}></div>
-                          <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${status.color} ${status.border}`}>
+                          <div
+                            className={`w-2 h-2 rounded-full ${status.dot}`}
+                          ></div>
+                          <span
+                            className={`text-xs font-semibold px-3 py-1.5 rounded-full ${status.color} ${status.border}`}
+                          >
                             <StatusIcon size={12} className="inline mr-1.5" />
                             {status.label}
                           </span>
-                          <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${type.color} ${type.border}`}>
+                          <span
+                            className={`text-xs font-medium px-3 py-1.5 rounded-full ${type.color} ${type.border}`}
+                          >
                             <TypeIcon size={12} className="inline mr-1.5" />
                             {type.label}
                           </span>
                         </div>
-                        
+
                         <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-2">
                           {problem.title}
-                          <ExternalLink size={14} className="inline ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <ExternalLink
+                            size={14}
+                            className="inline ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          />
                         </h3>
-                        
+
                         <p className="text-gray-600 text-sm line-clamp-2 mb-3">
                           {problem.description}
                         </p>
-                        
+
                         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                           <span className="flex items-center gap-1.5">
                             <Calendar size={14} />
@@ -371,15 +455,18 @@ const ManageProblems = () => {
                             <Clock size={18} />
                           </button>
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              updateProblemStatus(problem._id, "solved");
-                            }}
-                            className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                            title="Mark Solved"
-                          >
-                            <CheckCircle size={18} />
-                          </button>
+  disabled={problem.status === "solved"}
+  onClick={(e) => handleMarkSolved(e, problem)}
+  className={`p-2 rounded-lg transition-colors ${
+    problem.status === "solved"
+      ? "text-gray-400 cursor-not-allowed"
+      : "text-emerald-600 hover:bg-emerald-50"
+  }`}
+  title="Mark Solved"
+>
+  <CheckCircle size={18} />
+</button>
+
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -391,7 +478,7 @@ const ManageProblems = () => {
                             <Edit size={18} />
                           </button>
                         </div>
-                        
+
                         <div className="relative">
                           <button
                             onClick={(e) => toggleMenu(problem._id, e)}
@@ -402,13 +489,18 @@ const ManageProblems = () => {
 
                           {activeMenu === problem._id && (
                             <>
-                              <div className="fixed inset-0 z-40" onClick={(e) => toggleMenu(problem._id, e)}></div>
+                              <div
+                                className="fixed inset-0 z-40"
+                                onClick={(e) => toggleMenu(problem._id, e)}
+                              ></div>
                               <div className="absolute right-0 top-full mt-1 bg-white rounded-xl border border-gray-200 shadow-xl w-56 z-50 py-2">
                                 <button
                                   className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    navigator.clipboard.writeText(`${window.location.origin}/problem/${problem._id}`);
+                                    navigator.clipboard.writeText(
+                                      `${window.location.origin}/problem/${problem._id}`,
+                                    );
                                     setActiveMenu(null);
                                   }}
                                 >
@@ -452,7 +544,9 @@ const ManageProblems = () => {
                 <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-6">
                   <FileText className="text-gray-400" size={32} />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No problems found</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No problems found
+                </h3>
                 <p className="text-gray-600 text-center max-w-md mb-6">
                   {searchTerm || statusFilter !== "all" || typeFilter !== "all"
                     ? "No problems match your current filters. Try adjusting your search or filters."
