@@ -21,7 +21,7 @@ export const ProblemProvider = ({ children }) => {
       setError(null);
 
       const { data } = await api.get(`/problem/active-problems`);
-      console.log(data.problems)
+      console.log(data.problems);
       if (data.success) {
         setProblems(data.problems);
       }
@@ -83,7 +83,7 @@ export const ProblemProvider = ({ children }) => {
         },
       });
       setMyProblems(res.data.problems);
-      console.log("My problems:", res.data.problems);
+      // console.log("My problems:", res.data.problems);
     } catch (error) {
       console.error("Fetch my problems error:", error);
     } finally {
@@ -91,7 +91,7 @@ export const ProblemProvider = ({ children }) => {
     }
   };
 
-   const markSolved = async (problemId, payload = {}) => {
+  const markSolved = async (problemId, payload = {}) => {
     try {
       setLoading(true);
       setError(null);
@@ -104,21 +104,21 @@ export const ProblemProvider = ({ children }) => {
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       if (data.success) {
         // update local states
         setProblems((prev) =>
           prev.map((p) =>
-            p._id === problemId ? { ...p, status: "solved" } : p
-          )
+            p._id === problemId ? { ...p, status: "solved" } : p,
+          ),
         );
 
         setMyProblems((prev) =>
           prev.map((p) =>
-            p._id === problemId ? { ...p, status: "solved" } : p
-          )
+            p._id === problemId ? { ...p, status: "solved" } : p,
+          ),
         );
       }
 
@@ -131,7 +131,44 @@ export const ProblemProvider = ({ children }) => {
       setLoading(false);
     }
   };
-  
+
+  const markFailed = async (problemId) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data } = await api.post(
+        `/problem/markasfailed/${problemId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (data.success) {
+        setProblems((prev) =>
+          prev.map((p) =>
+            p._id === problemId ? { ...p, status: "failed" } : p,
+          ),
+        );
+
+        setMyProblems((prev) =>
+          prev.map((p) =>
+            p._id === problemId ? { ...p, status: "failed" } : p,
+          ),
+        );
+      }
+
+      return data;
+    } catch (err) {
+      console.error("Mark failed error:", err);
+      setError(err.response?.data?.message || "Failed to mark failed");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ProblemContext.Provider
       value={{
@@ -143,7 +180,8 @@ export const ProblemProvider = ({ children }) => {
         fetchProblemById,
         myProblems,
         getAllUserProblems,
-        markSolved
+        markSolved,
+        markFailed,
       }}
     >
       {children}

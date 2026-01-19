@@ -52,7 +52,7 @@ const problemSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["open", "in-progress","abandon","solved"],
+      enum: ["open", "in-progress","failed","solved"],
       default: "open",
     },
 

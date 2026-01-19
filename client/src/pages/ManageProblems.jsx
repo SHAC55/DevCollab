@@ -2,23 +2,13 @@ import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import { useProblem } from "../context/problemContext";
 import {
-  Eye,
-  Edit,
-  Trash2,
   PlusCircle,
-  Filter,
   Search,
   Loader2,
-  AlertCircle,
-  MoreVertical,
   CheckCircle,
   Clock,
   AlertTriangle,
   FileText,
-  Download,
-  Share2,
-  Archive,
-  ChevronRight,
   Users,
   MessageSquare,
   Calendar,
@@ -28,8 +18,14 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const ManageProblems = () => {
-  const { myProblems, getAllUserProblems, loading, updateProblemStatus,markSolved } =
-    useProblem();
+  const {
+    myProblems,
+    getAllUserProblems,
+    loading,
+    updateProblemStatus,
+    markSolved,
+    markFailed,
+  } = useProblem();
 
   const navigate = useNavigate();
 
@@ -60,34 +56,61 @@ const ManageProblems = () => {
   }, [myProblems]);
 
   const handleMarkSolved = async (e, problem) => {
-  e.stopPropagation();
+    e.stopPropagation();
 
-  try {
-    if (problem.type === "paid") {
-      const qualityRating = prompt("Rate solution quality (1–5):");
-      const deliveryOnTime = prompt("Rate delivery (1–5):");
+    try {
+      if (problem.type === "paid") {
+        const qualityRating = prompt("Rate solution quality (1–5):");
+        const deliveryOnTime = prompt("Rate delivery (1–5):");
 
-      if (!qualityRating || !deliveryOnTime) return;
+        if (!qualityRating || !deliveryOnTime) return;
 
-      await markSolved(problem._id, {
-        qualityRating: Number(qualityRating),
-        deliveryOnTime: Number(deliveryOnTime),
-      });
-    } else {
-      // FREE problem
-      if (!window.confirm("Mark this problem as solved and reward top solution?"))
-        return;
+        await markSolved(problem._id, {
+          qualityRating: Number(qualityRating),
+          deliveryOnTime: Number(deliveryOnTime),
+        });
+      } else {
+        // FREE problem
+        if (
+          !window.confirm(
+            "Mark this problem as solved and reward top solution?",
+          )
+        )
+          return;
 
-      await markSolved(problem._id);
+        await markSolved(problem._id);
+      }
+
+      await getAllUserProblems(); // refresh list
+    } catch (err) {
+      console.error("Solve failed:", err);
+      alert("Failed to mark solved");
+    }
+  };
+
+  const handleMarkFailed = async (e, problem) => {
+    e.stopPropagation();
+
+    if (problem.type !== "paid") {
+      alert("Only paid problems can be marked as failed");
+      return;
     }
 
-    await getAllUserProblems(); // refresh list
-  } catch (err) {
-    console.error("Solve failed:", err);
-    alert("Failed to mark solved");
-  }
-};
+    if (
+      !window.confirm(
+        "Mark this paid problem as FAILED? Reputation will be deducted.",
+      )
+    )
+      return;
 
+    try {
+      await markFailed(problem._id);
+      await getAllUserProblems();
+    } catch (err) {
+      console.error("Fail mark error:", err);
+      alert("Failed to mark problem as failed");
+    }
+  };
 
   // ---------------- FILTER ----------------
   const filteredProblems = myProblems.filter((problem) => {
@@ -141,6 +164,15 @@ const ManageProblems = () => {
       gradient: "from-gray-500 to-gray-700",
       light: "bg-gray-500/10",
     },
+    failed: {
+      label: "Failed",
+      icon: AlertTriangle,
+      color: "bg-red-50 text-red-700",
+      dot: "bg-red-500",
+      border: "border-red-100",
+      gradient: "from-red-500 to-red-700",
+      light: "bg-red-500/10",
+    },
   };
 
   const typeConfig = {
@@ -174,16 +206,16 @@ const ManageProblems = () => {
     myProblems.filter((p) => (status === "all" ? true : p.status === status))
       .length;
 
-  const toggleMenu = (problemId, e) => {
-    e.stopPropagation();
-    setActiveMenu(activeMenu === problemId ? null : problemId);
-  };
+  // const toggleMenu = (problemId, e) => {
+  //   e.stopPropagation();
+  //   setActiveMenu(activeMenu === problemId ? null : problemId);
+  // };
 
-  const handleDelete = (problemId) => {
-    if (window.confirm("Are you sure you want to delete this problem?")) {
-      console.log("Delete:", problemId);
-    }
-  };
+  // const handleDelete = (problemId) => {
+  //   if (window.confirm("Are you sure you want to delete this problem?")) {
+  //     console.log("Delete:", problemId);
+  //   }
+  // };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -195,7 +227,7 @@ const ManageProblems = () => {
 
   // ---------------- UI ----------------
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100/30">
+    <div className="bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.12),transparent_40%),linear-gradient(120deg,#f3ecff,#eef3ff,#ffffff)] min-h-screen">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -288,7 +320,7 @@ const ManageProblems = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-3 w-full lg:w-auto">
+              {/* <div className="flex items-center gap-3 w-full lg:w-auto">
                 <div className="relative group">
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
                   <select
@@ -315,7 +347,7 @@ const ManageProblems = () => {
                 >
                   Clear Filters
                 </button>
-              </div>
+              </div> */}
             </div>
 
             {/* ACTIVE FILTERS */}
@@ -445,93 +477,28 @@ const ManageProblems = () => {
                       <div className="flex items-center gap-3 lg:gap-2">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              updateProblemStatus(problem._id, "in-progress");
-                            }}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Mark In Progress"
+                            disabled={problem.status === "solved"}
+                            onClick={(e) => handleMarkSolved(e, problem)}
+                            className={`p-2 rounded-lg transition-colors ${
+                              problem.status === "solved"
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "text-emerald-600 hover:bg-emerald-50"
+                            }`}
+                            title="Mark Solved"
                           >
-                            <Clock size={18} />
-                          </button>
-                          <button
-  disabled={problem.status === "solved"}
-  onClick={(e) => handleMarkSolved(e, problem)}
-  className={`p-2 rounded-lg transition-colors ${
-    problem.status === "solved"
-      ? "text-gray-400 cursor-not-allowed"
-      : "text-emerald-600 hover:bg-emerald-50"
-  }`}
-  title="Mark Solved"
->
-  <CheckCircle size={18} />
-</button>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/problem/${problem._id}/edit`);
-                            }}
-                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                            title="Edit Problem"
-                          >
-                            <Edit size={18} />
-                          </button>
-                        </div>
-
-                        <div className="relative">
-                          <button
-                            onClick={(e) => toggleMenu(problem._id, e)}
-                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                          >
-                            <MoreVertical size={20} />
+                            <CheckCircle size={18} />
                           </button>
 
-                          {activeMenu === problem._id && (
-                            <>
-                              <div
-                                className="fixed inset-0 z-40"
-                                onClick={(e) => toggleMenu(problem._id, e)}
-                              ></div>
-                              <div className="absolute right-0 top-full mt-1 bg-white rounded-xl border border-gray-200 shadow-xl w-56 z-50 py-2">
-                                <button
-                                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigator.clipboard.writeText(
-                                      `${window.location.origin}/problem/${problem._id}`,
-                                    );
-                                    setActiveMenu(null);
-                                  }}
-                                >
-                                  <Share2 size={16} />
-                                  Share Problem
-                                </button>
-                                <button
-                                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    console.log("Download details");
-                                    setActiveMenu(null);
-                                  }}
-                                >
-                                  <Download size={16} />
-                                  Download Details
-                                </button>
-                                <button
-                                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDelete(problem._id);
-                                    setActiveMenu(null);
-                                  }}
-                                >
-                                  <Trash2 size={16} />
-                                  Delete Problem
-                                </button>
-                              </div>
-                            </>
-                          )}
+                          {problem.type === "paid" &&
+                            problem.status !== "solved" && (
+                              <button
+                                onClick={(e) => handleMarkFailed(e, problem)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Mark Failed"
+                              >
+                                <AlertTriangle size={18} />
+                              </button>
+                            )}
                         </div>
                       </div>
                     </div>
@@ -557,7 +524,7 @@ const ManageProblems = () => {
                     setSearchTerm("");
                     setStatusFilter("all");
                     setTypeFilter("all");
-                    navigate("/problems/new");
+                    navigate("/post-problem");
                   }}
                   className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300"
                 >

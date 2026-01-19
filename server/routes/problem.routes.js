@@ -4,6 +4,7 @@ import {
   getActiveProblems,
   getProblemById,
   getUserAllProblems,
+  markFailed,
   markSolved,
   postProblem,
 } from "../controllers/problem.controller.js";
@@ -19,5 +20,7 @@ problemRouter.get("/myproblems", authMiddleware, getUserAllProblems);
 problemRouter.get("/:id", getProblemById);
 
 problemRouter.post("/markedassolved/:problemId", authMiddleware, markSolved);
+
+problemRouter.post("/markasfailed/:problemId",authMiddleware,markFailed)
 
 export default problemRouter;

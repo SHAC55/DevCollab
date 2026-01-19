@@ -231,3 +231,70 @@ export const markSolved = async (req, res) => {
     });
   }
 };
+
+// mark as failed 
+export const markFailed = async (req, res) => {
+  try {
+    const { problemId } = req.params;
+    const ownerId = req.user.id;
+
+    const problem = await problemModel
+      .findById(problemId)
+      .populate("selectedBidder");
+
+    if (!problem) {
+      return res.status(404).json({
+        success: false,
+        message: "Problem not found",
+      });
+    }
+
+    // only owner can mark failed
+    if (problem.userId.toString() !== ownerId) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
+
+    // only for paid problems
+    if (problem.type !== "paid") {
+      return res.status(400).json({
+        success: false,
+        message: "Only paid problems can be marked as failed",
+      });
+    }
+
+    if (!problem.selectedBidder) {
+      return res.status(400).json({
+        success: false,
+        message: "No bidder selected for this problem",
+      });
+    }
+
+    // penalize solver
+    const solverId = problem.selectedBidder._id;
+
+    await userModel.findByIdAndUpdate(solverId, {
+      $inc: {
+        reputationPoints: -15, // penalty 
+      },
+    });
+
+    // mark failed
+    problem.status = "failed";
+    await problem.save();
+
+    return res.json({
+      success: true,
+      message: "Paid problem marked as failed",
+    });
+  } catch (error) {
+    console.error("Mark failed error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
