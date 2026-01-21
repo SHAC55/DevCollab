@@ -35,7 +35,7 @@ const AllBids = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [problemTitle, setProblemTitle] = useState("");
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadData = async () => {
@@ -109,7 +109,7 @@ const AllBids = () => {
 
   // Calculate statistics
   const averageBid = Math.round(
-    bids.reduce((sum, bid) => sum + bid.amount, 0) / (bids.length || 1)
+    bids.reduce((sum, bid) => sum + bid.amount, 0) / (bids.length || 1),
   );
   const minBid = bids.length ? Math.min(...bids.map((b) => b.amount)) : 0;
   const maxBid = bids.length ? Math.max(...bids.map((b) => b.amount)) : 0;
@@ -139,7 +139,10 @@ const AllBids = () => {
         {/* Bids skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
+            <div
+              key={i}
+              className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse"
+            >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
@@ -172,9 +175,7 @@ const AllBids = () => {
           <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
             <DollarSign className="w-10 h-10 text-purple-600" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
-            No bids yet
-          </h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">No bids yet</h3>
           <p className="text-gray-600 max-w-sm mx-auto mb-6 text-sm">
             Be the first to place a bid on this project!
           </p>
@@ -203,7 +204,7 @@ const AllBids = () => {
           {isOwner && pendingBids > 0 && !acceptedBidId && (
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 rounded-lg font-medium border border-emerald-200 text-sm">
               <Award className="w-4 h-4" />
-              {pendingBids} pending {pendingBids === 1 ? 'bid' : 'bids'}
+              {pendingBids} pending {pendingBids === 1 ? "bid" : "bids"}
             </div>
           )}
         </div>
@@ -212,7 +213,9 @@ const AllBids = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-lg font-bold text-gray-900">{bids.length}</div>
+              <div className="text-lg font-bold text-gray-900">
+                {bids.length}
+              </div>
               <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                 <Users className="w-4 h-4 text-purple-600" />
               </div>
@@ -222,7 +225,9 @@ const AllBids = () => {
 
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-lg font-bold text-gray-900">${averageBid}</div>
+              <div className="text-lg font-bold text-gray-900">
+                ${averageBid}
+              </div>
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 text-blue-600" />
               </div>
@@ -256,15 +261,17 @@ const AllBids = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {bids.map((bid) => {
           const isAccepted = bid.status === "accepted";
-          const isSelectable = isOwner && bid.status === "pending" && !acceptedBidId;
+          const isSelectable =
+            isOwner && bid.status === "pending" && !acceptedBidId;
 
           return (
             <div
               key={bid._id}
               className={`group bg-white rounded-xl border transition-all duration-200 hover:shadow-md relative
-                ${isAccepted
-                  ? "border-emerald-300 ring-1 ring-emerald-100"
-                  : "border-gray-200 hover:border-purple-200"
+                ${
+                  isAccepted
+                    ? "border-emerald-300 ring-1 ring-emerald-100"
+                    : "border-gray-200 hover:border-purple-200"
                 }`}
             >
               {/* Accepted badge */}
@@ -280,12 +287,17 @@ const AllBids = () => {
                 {/* Header - Compact */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center
-                      ${isAccepted
-                        ? 'bg-gradient-to-br from-emerald-100 to-teal-100'
-                        : 'bg-gradient-to-br from-purple-100 to-indigo-100'
-                      }`}>
-                      <User className={`w-5 h-5 ${isAccepted ? 'text-emerald-600' : 'text-purple-600'}`} />
+                    <div
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center
+                      ${
+                        isAccepted
+                          ? "bg-gradient-to-br from-emerald-100 to-teal-100"
+                          : "bg-gradient-to-br from-purple-100 to-indigo-100"
+                      }`}
+                    >
+                      <User
+                        className={`w-5 h-5 ${isAccepted ? "text-emerald-600" : "text-purple-600"}`}
+                      />
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-900 text-sm">
@@ -294,9 +306,9 @@ const AllBids = () => {
                       <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          {new Date(bid.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric'
+                          {new Date(bid.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
                           })}
                         </span>
                       </div>
@@ -305,7 +317,7 @@ const AllBids = () => {
 
                   <span
                     className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-medium ${getStatusColor(
-                      bid.status
+                      bid.status,
                     )}`}
                   >
                     {getStatusIcon(bid.status)}
@@ -378,12 +390,19 @@ const AllBids = () => {
                 {isAccepted && (
                   <div className="mt-4 space-y-2">
                     <button
-                      onClick={() => console.log("Open chat with", navigate(`/problem/chat/${bid._id}`))}
+                      onClick={() =>
+                        navigate(`/chat/${id}`, {
+                          state: {
+                            otherUserId: bid.userId?._id,
+                            otherUserName: bid.userId?.username,
+                          },
+                        })
+                      }
                       className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 rounded-lg font-medium hover:from-indigo-600 hover:to-purple-600 transition-all text-sm"
                     >
-                      <span className="text-sm">💬</span>
-                      Message Developer
+                      💬 Message Developer
                     </button>
+
                     <div className="text-center text-xs text-emerald-600 font-medium px-3 py-1.5 bg-emerald-50 rounded">
                       Selected for this project
                     </div>
@@ -403,9 +422,13 @@ const AllBids = () => {
               <Sparkles className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 text-sm mb-0.5">Review pending bids</h4>
+              <h4 className="font-semibold text-gray-900 text-sm mb-0.5">
+                Review pending bids
+              </h4>
               <p className="text-gray-700 text-xs">
-                You have <span className="font-medium text-blue-600">{pendingBids}</span> proposals awaiting your decision.
+                You have{" "}
+                <span className="font-medium text-blue-600">{pendingBids}</span>{" "}
+                proposals awaiting your decision.
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-gray-400 ml-auto" />

@@ -1,80 +1,110 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import { socket } from "../socket";
-import axios from "axios";
+import { useParams, useLocation } from "react-router-dom";
 import { useAuth } from "../context/authContext";
+import { useChat } from "../context/chatContext";
 
 const Chat = () => {
-  const { problemId } = useParams();
+  const { problemId } = useParams(); // roomId
+  const location = useLocation();
   const { user } = useAuth();
 
+  const navOtherUserId = location.state?.otherUserId;
+  const navOtherUserName = location.state?.otherUserName;
+
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [chatUser, setChatUser] = useState(null);
 
   const bottomRef = useRef(null);
 
-  const fetchMessages = async () => {
-    const res = await axios.get(
-      `http://localhost:5000/api/chat/messages/${problemId}`,
-    );
-    setMessages(res.data);
-  };
+  const {
+    messages,
+    fetchMessages,
+    joinRoom,
+    sendMessage: sendSocketMessage,
+  } = useChat();
 
-  // join room + receive messages
+  // FETCH + JOIN ROOM
   useEffect(() => {
-    fetchMessages();
-    socket.emit("join_room", problemId);
+    const load = async () => {
+      const oldMsgs = await fetchMessages(problemId);
 
-    socket.on("receive_message", (data) => {
-      setMessages((prev) => [...prev, data]);
-    });
+      // fallback if page refreshed
+      if (!navOtherUserId && oldMsgs?.length > 0) {
+        const firstMsg = oldMsgs[0];
+        const other =
+          firstMsg.sender._id === user._id
+            ? firstMsg.receiver
+            : firstMsg.sender;
+        setChatUser(other);
+      }
+    };
 
-    return () => socket.off("receive_message");
+    load();
+    joinRoom(problemId);
   }, [problemId]);
 
-  // auto scroll
+  // AUTO SCROLL
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendMessage = () => {
+  // SEND MESSAGE
+  const handleSend = () => {
     if (!message.trim()) return;
 
-    const data = {
+    const receiverId = navOtherUserId || chatUser?._id;
+
+    if (!receiverId) {
+      console.error("Receiver missing");
+      return;
+    }
+
+    sendSocketMessage({
       roomId: problemId,
       senderId: user._id,
-      senderName: user.username,
+      receiverId,
       text: message,
-      time: new Date().toLocaleTimeString(),
-    };
+    });
 
-    socket.emit("send_message", data);
     setMessage("");
   };
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
-      <div className="p-4 border-b bg-white font-semibold">Project Chat</div>
+      <div className="p-4 border-b bg-white font-semibold">
+        Chat with {navOtherUserName || chatUser?.username || "User"}
+      </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
-        {messages.map((m, i) => (
-          <div
-            key={m._id || i}
-            className={`max-w-xs p-3 rounded-lg text-sm ${
-              m.senderId?.toString() === user._id
-                ? "ml-auto bg-indigo-600 text-white"
-                : "bg-white border"
-            }`}
-          >
-            <p className="text-xs font-bold mb-1">{m.senderName}</p>
-            <p>{m.text}</p>
-            <p className="text-[10px] mt-1 opacity-70">
-              {new Date(m.createdAt).toLocaleTimeString()}
-            </p>
-          </div>
-        ))}
+        {messages.map((m, i) => {
+          const senderId =
+            typeof m.sender === "string" ? m.sender : m.sender?._id;
+
+          const isMe = senderId === user._id;
+
+          return (
+            <div
+              key={m._id || i}
+              className={`max-w-xs p-3 rounded-lg text-sm ${
+                isMe
+                  ? "ml-auto bg-indigo-600 text-white"
+                  : "bg-white border"
+              }`}
+            >
+              {!isMe && (
+                <p className="text-xs font-bold mb-1">
+                  {m.sender?.username}
+                </p>
+              )}
+              <p>{m.text}</p>
+              <p className="text-[10px] mt-1 opacity-70">
+                {new Date(m.createdAt).toLocaleTimeString()}
+              </p>
+            </div>
+          );
+        })}
 
         <div ref={bottomRef}></div>
       </div>
@@ -88,7 +118,7 @@ const Chat = () => {
           className="flex-1 border rounded px-3 py-2 text-sm"
         />
         <button
-          onClick={sendMessage}
+          onClick={handleSend}
           className="bg-indigo-600 text-white px-4 rounded"
         >
           Send

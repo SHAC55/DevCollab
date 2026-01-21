@@ -37,7 +37,7 @@ const App = () => {
         <Route path="/problems/:id" element={<ProblemDetails />} />
         <Route path="/problems/:id/submit-solution" element={<SolutionSubmission/>} />
         <Route path="/problems/:id/apply-bid" element={<BidSubmission/>} />
-        <Route path="/problem/chat/:problemId" element={<Chat />} />
+        <Route path="/chat/:problemId" element={<Chat />} />
         <Route path="/manageproblems" element={<ManageProblems/>}  />
         <Route path="/leaderboard" element={<Leaderboard/>} />
         <Route path="/recentchats" element={<RecentChats/>} />

@@ -1,5 +1,11 @@
 import React from "react";
-import { FileText, DollarSign, MessageSquare, BarChart3 } from "lucide-react";
+import {
+  FileText,
+  DollarSign,
+  MessageSquare,
+  BarChart3,
+  ClipboardList,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const QuickActions = () => {
@@ -19,6 +25,13 @@ const QuickActions = () => {
       color: "bg-blue-100",
       iconColor: "text-blue-600",
       route: "/explore",
+    },
+    {
+      title: "Manage Problems", // ✅ NEW
+      icon: ClipboardList,
+      color: "bg-indigo-100",
+      iconColor: "text-indigo-600",
+      route: "/manageproblems",
     },
     {
       title: "Messages",
@@ -42,7 +55,8 @@ const QuickActions = () => {
         Quick Actions
       </h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {/* auto-fit grid looks better for 5 items */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {quickActions.map((action, index) => (
           <button
             key={index}

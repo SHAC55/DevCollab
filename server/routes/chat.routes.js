@@ -1,11 +1,11 @@
-    import express from "express";
-    import { authMiddleware } from "../middlewares/authMiddleware.js";
-    import { getMessages, getRecentChats } from "../controllers/chat.controller.js";
+import express from "express";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { getRecentChats, getMessages } from "../controllers/chat.controller.js";
+
+const chatRouter = express.Router();
 
 
-    const chatRouter = express.Router();
+chatRouter.get("/recent", authMiddleware, getRecentChats);
+chatRouter.get("/:roomId", authMiddleware, getMessages);
 
-    chatRouter.get('/messages/:roomId',getMessages)
-    chatRouter.get("/recent", authMiddleware, getRecentChats);
-
-    export default chatRouter;
+export default chatRouter;

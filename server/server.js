@@ -55,27 +55,44 @@ app.use("/api/problem", problemRouter);
 app.use("/api/solution", solutionRouter);
 app.use("/api/bid", bidRouter);
 app.use("/api/leaderboard", leaderBoardRouter);
-app.use("/api/dashboard",dashRouter)
-app.use("/api/chat",chatRouter)
+app.use("/api/dashboard", dashRouter);
+app.use("/api/chat", chatRouter);
+
+// ================= SOCKET LOGIC =================
 
 // ================= SOCKET LOGIC =================
 
 io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
   socket.on("join_room", (roomId) => {
     socket.join(roomId);
+    console.log("Joined room:", roomId);
   });
 
   socket.on("send_message", async (data) => {
-    // save to  db
-    const savedMsg = await chatModel.create({
-      roomId: data.roomId,
-      senderId: data.senderId,
-      senderName: data.senderName,
-      text: data.text,
-    });
+    try {
+      const savedMsg = await chatModel.create({
+        roomId: data.roomId,
+        sender: data.senderId,
+        receiver: data.receiverId,
+        text: data.text,
+      });
 
-    // send to  room
-    io.to(data.roomId).emit("receive_message", savedMsg);
+      // populate sender for frontend
+      const populatedMsg = await savedMsg.populate(
+        "sender receiver",
+        "username",
+      );
+
+      io.to(data.roomId).emit("receive_message", populatedMsg);
+    } catch (err) {
+      console.error("Socket message save error:", err);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
   });
 });
 
