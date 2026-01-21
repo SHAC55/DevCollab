@@ -11,6 +11,8 @@ import solutionRouter from "./routes/solution.routes.js";
 import bidRouter from "./routes/bid.routes.js";
 import chatModel from "./models/chatModel.js";
 import leaderBoardRouter from "./routes/leaderboard.routes.js";
+import dashRouter from "./routes/dashboard.routes.js";
+import chatRouter from "./routes/chat.routes.js";
 
 dotenv.config();
 
@@ -37,7 +39,7 @@ app.use(
   cors({
     origin: ["http://localhost:5173"],
     credentials: true,
-  })
+  }),
 );
 
 app.use(express.json());
@@ -52,7 +54,9 @@ app.use("/api/auth", authRouter);
 app.use("/api/problem", problemRouter);
 app.use("/api/solution", solutionRouter);
 app.use("/api/bid", bidRouter);
-app.use("/api/leaderboard",leaderBoardRouter)
+app.use("/api/leaderboard", leaderBoardRouter);
+app.use("/api/dashboard",dashRouter)
+app.use("/api/chat",chatRouter)
 
 // ================= SOCKET LOGIC =================
 
@@ -71,8 +75,7 @@ io.on("connection", (socket) => {
     });
 
     // send to  room
-   io.to(data.roomId).emit("receive_message", savedMsg);
-
+    io.to(data.roomId).emit("receive_message", savedMsg);
   });
 });
 

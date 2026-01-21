@@ -38,7 +38,7 @@ const bidSchema = new mongoose.Schema(
       default: "pending",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // one user can bid only once per problem

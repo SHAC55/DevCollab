@@ -21,7 +21,7 @@ export const ProblemProvider = ({ children }) => {
       setError(null);
 
       const { data } = await api.get(`/problem/active-problems`);
-      console.log(data.problems);
+      // console.log(data.problems);
       if (data.success) {
         setProblems(data.problems);
       }

@@ -242,13 +242,13 @@ const ManageProblems = () => {
                 Manage and track all your submitted problems
               </p>
             </div>
-            <button
+            {/* <button
               onClick={() => navigate("/problems/new")}
               className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg"
             >
               <PlusCircle size={20} />
               Submit New Problem
-            </button>
+            </button> */}
           </div>
 
           {/* STATS CARDS */}

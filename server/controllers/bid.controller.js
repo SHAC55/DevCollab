@@ -1,7 +1,6 @@
-import e from "express";
 import bidsModel from "../models/bidsModel.js";
 import problemModel from "../models/problemModel.js";
-import chatModel from "../models/chatModel.js";
+
 
 // apply for bids
 export const applyForBid = async (req, res) => {
@@ -160,11 +159,3 @@ export const selectBidByProblem = async (req, res) => {
   }
 };
 
-//
-export const getMessages = async (req, res) => {
-  const messages = await chatModel
-    .find({ roomId: req.params.roomId })
-    .sort({ createdAt: 1 });
-
-  res.json(messages);
-};

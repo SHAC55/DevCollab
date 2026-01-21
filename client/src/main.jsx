@@ -7,6 +7,7 @@ import { AuthProvider } from "./context/authContext.jsx";
 import { ProblemProvider } from "./context/problemContext.jsx";
 import { SolutionProvider } from "./context/solutionContext.jsx";
 import { LeaderboardProvider } from "./context/leaderboardContext.jsx";
+import { DashProvider } from "./context/dashContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -14,10 +15,12 @@ createRoot(document.getElementById("root")).render(
       <SolutionProvider>
         <ProblemProvider>
           <LeaderboardProvider>
-          <App />
+            <DashProvider>
+              <App />
+            </DashProvider>
           </LeaderboardProvider>
         </ProblemProvider>
       </SolutionProvider>
     </AuthProvider>
-  </BrowserRouter>
+  </BrowserRouter>,
 );

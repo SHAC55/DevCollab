@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   // Restore auth on refresh
   useEffect(() => {
@@ -21,9 +21,7 @@ export const AuthProvider = ({ children }) => {
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${storedToken}`;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
     }
 
     setLoading(false);
@@ -43,9 +41,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
 
-    axios.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${data.token}`;
+    axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
 
     setToken(data.token);
     setUser(data.user);
@@ -56,23 +52,20 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await api.post("/auth/register", formData);
 
-    if (!data.success) {
-      throw new Error(data.message || "Registration failed");
-    }
+      if (!data.success) {
+        throw new Error(data.message || "Registration failed");
+      }
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-    axios.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${data.token}`;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
 
-    setToken(data.token);
-    setUser(data.user);
+      setToken(data.token);
+      setUser(data.user);
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
-    
   };
 
   // 🚪 LOGOUT
@@ -82,7 +75,7 @@ export const AuthProvider = ({ children }) => {
     delete axios.defaults.headers.common["Authorization"];
     setToken(null);
     setUser(null);
-    navigate('/')
+    navigate("/");
     toast.error("Logged out successfully");
   };
 

@@ -15,7 +15,7 @@ const Chat = () => {
 
   const fetchMessages = async () => {
     const res = await axios.get(
-      `http://localhost:5000/api/bid/messages/${problemId}`
+      `http://localhost:5000/api/chat/messages/${problemId}`,
     );
     setMessages(res.data);
   };

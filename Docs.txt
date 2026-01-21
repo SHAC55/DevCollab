@@ -11,15 +11,32 @@
 /api/problem/active-problems
 /api/problem/myproblems
 /api/problem/:id
+/api/markedassolved/:problemId
+/api/markasfailed/:problemId
 
 3. API for solution
 
 /api/solution/submit-solution/:problemId
 /api/solution/get-solutions/:problemId
 /api/solution/react/:sloutionId
+/api/solution/select-top/:problemId
 
 4.  API for bids
 
 /api/bid/applyforbid/:problemId
 /api/bid/allbids/:problemId
 /api/bid/selectbid/:problemId
+/api/messages/:roomId
+
+
+5. API for leaderboard
+
+/api/leaderboard/community
+/api/leaderboard/collab
+/api/leaderboard/reputation
+
+6. API for dashboard
+
+/api/dashboard/user-stats
+
+
