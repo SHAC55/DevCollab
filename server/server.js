@@ -29,7 +29,7 @@ const server = http.createServer(app);
 // SOCKET.IO SETUP
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173","https://devcollab-one.vercel.app"],
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -41,7 +41,7 @@ connectDB();
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173","https://devcollab-one.vercel.app"],
     credentials: true,
   }),
 );
@@ -96,7 +96,7 @@ io.on("connection", (socket) => {
     // send message to room
     io.to(data.roomId).emit("receive_message", populatedMsg);
 
-    // 🔔 CREATE NOTIFICATION IN DB
+    // CREATE NOTIFICATION IN DB
     const notification = await notificationModel.create({
       user: data.receiverId,
       type: "MESSAGE",
@@ -104,7 +104,7 @@ io.on("connection", (socket) => {
       link: `/chat/${data.roomId}`,
     });
 
-    // 🔔 REAL-TIME NOTIFICATION TO RECEIVER
+    //  REAL-TIME NOTIFICATION TO RECEIVER
     io.to(data.receiverId).emit("new_notification", notification);
 
   } catch (err) {
