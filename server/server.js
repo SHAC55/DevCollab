@@ -29,7 +29,7 @@ const server = http.createServer(app);
 // SOCKET.IO SETUP
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173","https://devcollab-psi.vercel.app"],
+    origin: ["http://localhost:5173","https://devcollab-seven.vercel.app"],
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -41,7 +41,7 @@ connectDB();
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173","https://devcollab-psi.vercel.app"],
+    origin: ["http://localhost:5173","https://devcollab-seven.vercel.app"],
     credentials: true,
   }),
 );
