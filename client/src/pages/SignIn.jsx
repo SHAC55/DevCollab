@@ -28,10 +28,11 @@ const SignIn = () => {
     }
   };
 
-
   return (
-    <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8
-      bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+    <section
+      className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8
+      bg-gradient-to-br from-slate-50 via-white to-indigo-50"
+    >
       {/* Background pattern */}
       <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]" />
 
@@ -84,7 +85,9 @@ const SignIn = () => {
               />
             </div>
             {errors.email && (
-              <p className="mt-2 text-sm text-red-500">{errors.email.message}</p>
+              <p className="mt-2 text-sm text-red-500">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -124,7 +127,9 @@ const SignIn = () => {
               </button>
             </div>
             {errors.password && (
-              <p className="mt-2 text-sm text-red-500">{errors.password.message}</p>
+              <p className="mt-2 text-sm text-red-500">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
@@ -163,17 +168,19 @@ const SignIn = () => {
           </button>
 
           {/* Divider */}
-          <div className="relative mb-6">
+          {/* <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-slate-500">Or continue with</span>
+              <span className="px-4 bg-white text-slate-500">
+                Or continue with
+              </span>
             </div>
-          </div>
+          </div> */}
 
           {/* Social Login Buttons */}
-          <div className="grid grid-cols-2 gap-3 mb-8">
+          {/* <div className="grid grid-cols-2 gap-3 mb-8">
             <button
               type="button"
               className="flex items-center justify-center gap-2 py-2.5 rounded-xl
@@ -192,7 +199,7 @@ const SignIn = () => {
               <Chrome className="w-5 h-5" />
               Google
             </button>
-          </div>
+          </div> */}
 
           {/* Sign Up Link */}
           <p className="text-center text-sm text-slate-600">
@@ -207,12 +214,15 @@ const SignIn = () => {
         </form>
 
         {/* Demo Credentials */}
-        <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50
-          border border-indigo-100">
+        {/* <div
+          className="mt-6 p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50
+          border border-indigo-100"
+        >
           <p className="text-sm text-slate-700 text-center">
-            <span className="font-medium">Demo credentials:</span> test@gmail.com / test1234
+            <span className="font-medium">Demo credentials:</span>{" "}
+            test@gmail.com / test1234
           </p>
-        </div>
+        </div> */}
       </div>
     </section>
   );

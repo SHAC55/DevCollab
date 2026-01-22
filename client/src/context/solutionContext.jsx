@@ -4,7 +4,6 @@ import { useAuth } from "./authContext";
 import { toast } from "react-toastify";
 import api from "../api/axios";
 
-
 const SolutionContext = createContext();
 
 export const SolutionProvider = ({ children }) => {
@@ -19,7 +18,7 @@ export const SolutionProvider = ({ children }) => {
     try {
       setLoading(true);
       const res = await api.get(
-        `${API_BASE_URL}/solution/get-solutions/${problemId}`
+        `${API_BASE_URL}/solution/get-solutions/${problemId}`,
       );
       setSolutions(res.data.solutions);
       return res.data.solutions;
@@ -41,7 +40,7 @@ export const SolutionProvider = ({ children }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       // update UI instantly
@@ -65,13 +64,13 @@ export const SolutionProvider = ({ children }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       // update only that solution in state
       setSolutions(
         (
-          prev // from all solution
+          prev, // from all solution
         ) =>
           prev.map((sol) =>
             sol._id === solutionId // from  all details  of  solution we  want  id  and  match  it  with solutionId
@@ -81,15 +80,15 @@ export const SolutionProvider = ({ children }) => {
                   dislikes: res.data.dislikes,
                   currentUserReaction: res.data.currentUserReaction,
                 }
-              : sol
-          )
+              : sol,
+          ),
       );
 
       toast.success("Reaction updated");
 
       return res.data;
     } catch (error) {
-      console.error(error);
+      console.error(err);
       toast.error(err.response?.data?.message || "Failed to react");
       throw err;
     }
@@ -105,7 +104,7 @@ export const SolutionProvider = ({ children }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       toast.success("Bid placed successfully");
@@ -117,7 +116,7 @@ export const SolutionProvider = ({ children }) => {
     }
   };
 
-  // get  allBids by problem 
+  // get  allBids by problem
   const getAllBidsByProblem = async (problemId) => {
     try {
       const res = await api.get(`${API_BASE_URL}/bid/allbids/${problemId}`);
@@ -130,48 +129,49 @@ export const SolutionProvider = ({ children }) => {
   };
 
   // selectBid by owner
-const selectBid = async (problemId, bidId) => {
-  try {
-    const res = await api.patch(
-      `${API_BASE_URL}/bid/select/${problemId}/${bidId}`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+  const selectBid = async (problemId, bidId) => {
+    try {
+      const res = await api.patch(
+        `${API_BASE_URL}/bid/select/${problemId}/${bidId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      }
-    );
+      );
 
-    toast.success("Bid selected successfully");
-    return res.data;
-  } catch (err) {
-    console.error("Select bid error:", err);
-    toast.error(err.response?.data?.message || "Failed to select bid");
-    throw err;
-  }
-};
+      toast.success("Bid selected successfully");
+      return res.data;
+    } catch (err) {
+      console.error("Select bid error:", err);
+      toast.error(err.response?.data?.message || "Failed to select bid");
+      throw err;
+    }
+  };
 
-const selectTopSolutions = async (problemId, solutionIds) => {
-  try {
-    const res = await api.post(
-      `${API_BASE_URL}/solution/select-top/${problemId}`,
-      { solutionIds },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+  const selectTopSolutions = async (problemId, solutionIds) => {
+    try {
+      const res = await api.post(
+        `${API_BASE_URL}/solution/select-top/${problemId}`,
+        { solutionIds },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      }
-    );
+      );
 
-    toast.success("Top solutions selected");
-    return res.data;
-  } catch (err) {
-    console.error("Select top solutions error:", err);
-    toast.error(err.response?.data?.message || "Failed to select top solutions");
-    throw err;
-  }
-};
-
+      toast.success("Top solutions selected");
+      return res.data;
+    } catch (err) {
+      console.error("Select top solutions error:", err);
+      toast.error(
+        err.response?.data?.message || "Failed to select top solutions",
+      );
+      throw err;
+    }
+  };
 
   return (
     <SolutionContext.Provider
@@ -184,7 +184,7 @@ const selectTopSolutions = async (problemId, solutionIds) => {
         addBid,
         getAllBidsByProblem,
         selectBid,
-        selectTopSolutions
+        selectTopSolutions,
       }}
     >
       {children}

@@ -14,6 +14,10 @@ import {
   Calendar,
   BarChart3,
   ExternalLink,
+  X,
+  Star,
+  Award,
+  ShieldAlert,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -32,13 +36,20 @@ const ManageProblems = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [activeMenu, setActiveMenu] = useState(null);
   const [stats, setStats] = useState({
     total: 0,
     open: 0,
     inProgress: 0,
     solved: 0,
   });
+
+  // Modal states
+  const [showSolvedModal, setShowSolvedModal] = useState(false);
+  const [showFailedModal, setShowFailedModal] = useState(false);
+  const [selectedProblem, setSelectedProblem] = useState(null);
+  const [qualityRating, setQualityRating] = useState(3);
+  const [deliveryOnTime, setDeliveryOnTime] = useState(3);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     getAllUserProblems();
@@ -57,34 +68,34 @@ const ManageProblems = () => {
 
   const handleMarkSolved = async (e, problem) => {
     e.stopPropagation();
+    setSelectedProblem(problem);
+    setShowSolvedModal(true);
+  };
 
+  const confirmMarkSolved = async () => {
+    if (!selectedProblem) return;
+
+    setActionLoading(true);
     try {
-      if (problem.type === "paid") {
-        const qualityRating = prompt("Rate solution quality (1–5):");
-        const deliveryOnTime = prompt("Rate delivery (1–5):");
-
-        if (!qualityRating || !deliveryOnTime) return;
-
-        await markSolved(problem._id, {
+      if (selectedProblem.type === "paid") {
+        await markSolved(selectedProblem._id, {
           qualityRating: Number(qualityRating),
           deliveryOnTime: Number(deliveryOnTime),
         });
       } else {
-        // FREE problem
-        if (
-          !window.confirm(
-            "Mark this problem as solved and reward top solution?",
-          )
-        )
-          return;
-
-        await markSolved(problem._id);
+        await markSolved(selectedProblem._id);
       }
 
-      await getAllUserProblems(); // refresh list
+      await getAllUserProblems();
+      setShowSolvedModal(false);
+      setSelectedProblem(null);
+      setQualityRating(3);
+      setDeliveryOnTime(3);
     } catch (err) {
       console.error("Solve failed:", err);
       alert("Failed to mark solved");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -92,23 +103,36 @@ const ManageProblems = () => {
     e.stopPropagation();
 
     if (problem.type !== "paid") {
-      alert("Only paid problems can be marked as failed");
+      // Show a nice error modal instead of alert
+      setSelectedProblem(problem);
+      setShowFailedModal(true);
       return;
     }
 
-    if (
-      !window.confirm(
-        "Mark this paid problem as FAILED? Reputation will be deducted.",
-      )
-    )
-      return;
+    setSelectedProblem(problem);
+    setShowFailedModal(true);
+  };
 
+  const confirmMarkFailed = async () => {
+    if (!selectedProblem) return;
+
+    if (selectedProblem.type !== "paid") {
+      alert("Only paid problems can be marked as failed");
+      setShowFailedModal(false);
+      return;
+    }
+
+    setActionLoading(true);
     try {
-      await markFailed(problem._id);
+      await markFailed(selectedProblem._id);
       await getAllUserProblems();
+      setShowFailedModal(false);
+      setSelectedProblem(null);
     } catch (err) {
       console.error("Fail mark error:", err);
       alert("Failed to mark problem as failed");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -206,17 +230,6 @@ const ManageProblems = () => {
     myProblems.filter((p) => (status === "all" ? true : p.status === status))
       .length;
 
-  // const toggleMenu = (problemId, e) => {
-  //   e.stopPropagation();
-  //   setActiveMenu(activeMenu === problemId ? null : problemId);
-  // };
-
-  // const handleDelete = (problemId) => {
-  //   if (window.confirm("Are you sure you want to delete this problem?")) {
-  //     console.log("Delete:", problemId);
-  //   }
-  // };
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
@@ -225,11 +238,260 @@ const ManageProblems = () => {
     });
   };
 
+  // ---------------- MODAL COMPONENTS ----------------
+  const RatingStars = ({ value, onChange }) => (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => onChange(star)}
+          className="focus:outline-none"
+        >
+          <Star
+            className={`w-8 h-8 transition-colors ${
+              star <= value
+                ? "text-yellow-500 fill-yellow-500"
+                : "text-gray-300"
+            }`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+
   // ---------------- UI ----------------
   return (
     <div className="bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.12),transparent_40%),linear-gradient(120deg,#f3ecff,#eef3ff,#ffffff)] min-h-screen">
       <Navbar />
 
+      {/* Mark Solved Modal */}
+      {showSolvedModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-100 rounded-lg">
+                    <Award className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Mark Problem as Solved
+                  </h3>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowSolvedModal(false);
+                    setSelectedProblem(null);
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <p className="text-gray-600 mb-6">
+                {selectedProblem?.type === "paid"
+                  ? "Please rate the solution quality and delivery time. This will help the developer improve."
+                  : "Mark this problem as solved and reward the best solution. This action cannot be undone."}
+              </p>
+
+              {selectedProblem?.type === "paid" ? (
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Solution Quality
+                    </label>
+                    <RatingStars
+                      value={qualityRating}
+                      onChange={setQualityRating}
+                    />
+                    <p className="text-sm text-gray-500 text-center">
+                      {qualityRating === 1 && "Poor - Didn't meet expectations"}
+                      {qualityRating === 2 && "Fair - Needs improvement"}
+                      {qualityRating === 3 && "Good - Met expectations"}
+                      {qualityRating === 4 &&
+                        "Very Good - Exceeded expectations"}
+                      {qualityRating === 5 && "Excellent - Outstanding work"}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Delivery Time
+                    </label>
+                    <RatingStars
+                      value={deliveryOnTime}
+                      onChange={setDeliveryOnTime}
+                    />
+                    <p className="text-sm text-gray-500 text-center">
+                      {deliveryOnTime === 1 && "Very Late - Missed deadline"}
+                      {deliveryOnTime === 2 && "Late - Slight delay"}
+                      {deliveryOnTime === 3 && "On Time - As expected"}
+                      {deliveryOnTime === 4 && "Early - Ahead of schedule"}
+                      {deliveryOnTime === 5 && "Very Early - Excellent timing"}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-blue-800">
+                        Free Problem Completion
+                      </p>
+                      <p className="text-sm text-blue-600 mt-1">
+                        The top solution will be rewarded and marked as
+                        accepted. Community members will be notified of the
+                        solved problem.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 mt-8">
+                <button
+                  onClick={() => {
+                    setShowSolvedModal(false);
+                    setSelectedProblem(null);
+                    setQualityRating(3);
+                    setDeliveryOnTime(3);
+                  }}
+                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors"
+                  disabled={actionLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmMarkSolved}
+                  disabled={actionLoading}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-medium rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {actionLoading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Processing...
+                    </div>
+                  ) : (
+                    "Confirm & Mark Solved"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mark Failed Modal */}
+      {showFailedModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <ShieldAlert className="w-6 h-6 text-red-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Mark Problem as Failed
+                  </h3>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowFailedModal(false);
+                    setSelectedProblem(null);
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              {selectedProblem?.type !== "paid" ? (
+                <div className="space-y-4">
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-amber-800">
+                          Only Paid Problems Can Be Marked as Failed
+                        </p>
+                        <p className="text-sm text-amber-600 mt-1">
+                          Free community problems cannot be marked as failed.
+                          Consider revising the problem or adding more details
+                          instead.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-red-800">
+                          Important: Reputation Impact
+                        </p>
+                        <p className="text-sm text-red-600 mt-1">
+                          Marking a paid problem as failed will deduct from your
+                          reputation score. This action should only be used when
+                          no satisfactory solution was provided.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Reason for Failure (Optional)
+                    </label>
+                    <textarea
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
+                      rows="3"
+                      placeholder="Briefly explain why this problem couldn't be solved..."
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 mt-8">
+                <button
+                  onClick={() => {
+                    setShowFailedModal(false);
+                    setSelectedProblem(null);
+                  }}
+                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors"
+                  disabled={actionLoading}
+                >
+                  Cancel
+                </button>
+                {selectedProblem?.type === "paid" && (
+                  <button
+                    onClick={confirmMarkFailed}
+                    disabled={actionLoading}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white font-medium rounded-xl hover:from-red-700 hover:to-rose-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {actionLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </div>
+                    ) : (
+                      "Confirm & Mark Failed"
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MAIN CONTENT */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* HEADER */}
         <div className="mb-8">
@@ -242,13 +504,6 @@ const ManageProblems = () => {
                 Manage and track all your submitted problems
               </p>
             </div>
-            {/* <button
-              onClick={() => navigate("/problems/new")}
-              className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg"
-            >
-              <PlusCircle size={20} />
-              Submit New Problem
-            </button> */}
           </div>
 
           {/* STATS CARDS */}
@@ -319,35 +574,6 @@ const ManageProblems = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-
-              {/* <div className="flex items-center gap-3 w-full lg:w-auto">
-                <div className="relative group">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
-                  <select
-                    value={typeFilter}
-                    onChange={(e) => setTypeFilter(e.target.value)}
-                    className="relative px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all w-full lg:w-auto"
-                  >
-                    <option value="all">All Types</option>
-                    {Object.entries(typeConfig).map(([key, config]) => (
-                      <option key={key} value={key}>
-                        {config.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setSearchTerm("");
-                    setStatusFilter("all");
-                    setTypeFilter("all");
-                  }}
-                  className="px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors border border-gray-200"
-                >
-                  Clear Filters
-                </button>
-              </div> */}
             </div>
 
             {/* ACTIVE FILTERS */}

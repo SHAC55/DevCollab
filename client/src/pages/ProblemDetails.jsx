@@ -56,38 +56,6 @@ const InfoPill = ({ icon: Icon, children, color = "gray" }) => {
   );
 };
 
-const StatCard = ({ icon: Icon, label, value, color = "indigo" }) => {
-  const colorMap = {
-    indigo: "bg-gradient-to-br from-indigo-500 to-purple-600",
-    emerald: "bg-gradient-to-br from-emerald-500 to-teal-600",
-    amber: "bg-gradient-to-br from-amber-500 to-orange-600",
-    purple: "bg-gradient-to-br from-purple-500 to-pink-600",
-    gray: "bg-gradient-to-br from-gray-600 to-gray-700",
-  };
-
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-gray-600 mb-1">{label}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-        </div>
-        <div className={`p-3 rounded-xl ${colorMap[color]}`}>
-          <Icon className="w-5 h-5 text-white" />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const TechBadge = ({ tech }) => (
-  <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-gray-100 to-gray-50 text-gray-800 rounded-lg text-sm font-medium border border-gray-200 hover:border-gray-300 transition-all group">
-    <Code2 className="w-3.5 h-3.5 text-gray-500 group-hover:text-indigo-500 transition-colors" />
-    {tech}
-    <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-  </span>
-);
-
 const ActionButton = ({ icon: Icon, label, onClick, variant = "primary" }) => {
   const variants = {
     primary:
@@ -355,13 +323,13 @@ const ProblemDetails = () => {
                       isActive={activeTab === "description"}
                       onClick={() => setActiveTab("description")}
                     />
-                    <TabButton
+                    {/* <TabButton
                       icon={MessageSquare}
                       label="Discussion"
                       isActive={activeTab === "discussion"}
                       onClick={() => setActiveTab("discussion")}
                       count={12}
-                    />
+                    /> */}
                     <TabButton
                       icon={Target}
                       label="Requirements"
@@ -382,47 +350,31 @@ const ProblemDetails = () => {
                     </div>
                   )}
 
-                  {activeTab === "discussion" && (
-                    <div className="text-center py-12">
-                      <div className="w-24 h-24 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                        <MessageSquare className="w-12 h-12 text-indigo-500" />
-                      </div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                        Discussion Coming Soon
-                      </h3>
-                      <p className="text-gray-600 max-w-md mx-auto">
-                        Join the conversation with other developers working on
-                        this problem.
-                      </p>
-                    </div>
-                  )}
+              
 
                   {activeTab === "requirements" && (
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-gray-700">
-                        <CheckCircle className="w-5 h-5 text-emerald-500" />
-                        <span>Clear problem statement</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-gray-700">
-                        <CheckCircle className="w-5 h-5 text-emerald-500" />
-                        <span>Expected time to complete</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-gray-700">
-                        <CheckCircle className="w-5 h-5 text-emerald-500" />
-                        <span>Tech stack requirements</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-gray-700">
-                        <CheckCircle className="w-5 h-5 text-emerald-500" />
-                        <span>Code quality standards</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-gray-700">
-                        <CheckCircle className="w-5 h-5 text-emerald-500" />
-                        <span>Testing requirements</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-gray-700">
-                        <CheckCircle className="w-5 h-5 text-emerald-500" />
-                        <span>Documentation needed</span>
-                      </div>
+                      {problem.requirements &&
+                      problem.requirements.length > 0 ? (
+                        problem.requirements.map((req, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-100"
+                          >
+                            <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5" />
+                            <span className="text-gray-800 font-medium">
+                              {req}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <Shield className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                          <p className="text-gray-600">
+                            No specific requirements mentioned for this problem.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -431,7 +383,7 @@ const ProblemDetails = () => {
 
             {/* -------- RIGHT: ACTION CARDS -------- */}
             <div className="space-y-6">
-              {/* STATS CARD */}
+            
 
               {/* ACTION CARD */}
               {!isOwner && (
@@ -488,32 +440,44 @@ const ProblemDetails = () => {
 
               {/* OWNER ACTIONS */}
               {isOwner && (
-                <div className="bg-gradient-to-br from-white to-amber-50 rounded-3xl border border-amber-100 shadow-sm p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Award className="w-6 h-6 text-amber-600" />
-                    <h3 className="font-semibold text-amber-900">
-                      You Own This Problem
-                    </h3>
+                <div className="bg-gradient-to-br from-white to-amber-50 rounded-2xl border border-amber-200 shadow-md overflow-hidden">
+                  {/* Header */}
+                  <div className="px-6 py-5 border-b border-amber-100 bg-gradient-to-r from-amber-50 to-white">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-amber-100 rounded-lg">
+                        <Award className="w-5 h-5 text-amber-700" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-gray-900">
+                          Problem Owner Dashboard
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-0.5">
+                          Manage and monitor your problem
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-3">
-                    <ActionButton
-                      icon={Eye}
-                      label="View Submissions"
-                      onClick={() => navigate(`/problems/${id}/submissions`)}
-                      variant="secondary"
-                    />
-                    <ActionButton
-                      icon={Edit}
-                      label="Edit Problem"
-                      onClick={() => navigate(`/problems/${id}/edit`)}
-                      variant="outline"
-                    />
-                    <ActionButton
-                      icon={BarChart3}
-                      label="Analytics"
-                      onClick={() => navigate(`/problems/${id}/analytics`)}
-                      variant="outline"
-                    />
+
+                  {/* Action Buttons */}
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 gap-3">
+                      <button onClick={() =>  navigate('/manageproblems')} className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-amber-700 hover:shadow-md transition-all duration-200 shadow-sm">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M4 6h16M4 12h16m-7 6h7"
+                          />
+                        </svg>
+                        Manage
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -547,8 +511,18 @@ const ProblemDetails = () => {
               isOwner={isOwner}
               topSolutions={problem.topSolutions || []}
             />
-          ) : (
+          ) : isOwner ? (
             <AllBids />
+          ) : (
+            <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center">
+              <Shield className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Bids are visible only to the problem owner
+              </h3>
+              <p className="text-gray-600">
+                {problem.bids} developers have already applied for this project.
+              </p>
+            </div>
           )}
         </section>
       </main>

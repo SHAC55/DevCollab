@@ -9,6 +9,7 @@ import { SolutionProvider } from "./context/solutionContext.jsx";
 import { LeaderboardProvider } from "./context/leaderboardContext.jsx";
 import { DashProvider } from "./context/dashContext.jsx";
 import { ChatProvider } from "./context/chatContext.jsx";
+import { NotificationProvider } from "./context/notificationContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -18,7 +19,9 @@ createRoot(document.getElementById("root")).render(
           <LeaderboardProvider>
             <DashProvider>
               <ChatProvider>
-              <App />
+                <NotificationProvider>
+                  <App />
+                </NotificationProvider>
               </ChatProvider>
             </DashProvider>
           </LeaderboardProvider>

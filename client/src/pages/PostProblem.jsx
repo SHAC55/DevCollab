@@ -1,9 +1,15 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import { useForm } from "react-hook-form";
-import { FiTag, FiDollarSign, FiCode, FiType, FiAlertCircle } from "react-icons/fi";
+import {
+  FiTag,
+  FiDollarSign,
+  FiCode,
+  FiType,
+  FiAlertCircle,
+} from "react-icons/fi";
 import { MdDescription, MdLink } from "react-icons/md";
-import { useProblem } from "../context/problemContext"
+import { useProblem } from "../context/problemContext";
 import { toast } from "react-toastify";
 const PostProblem = () => {
   const {
@@ -19,9 +25,12 @@ const PostProblem = () => {
 
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
+  const [requirements, setRequirements] = useState([]);
+  const [reqInput, setReqInput] = useState("");
+
   const problemType = watch("type");
 
-  const{ createProblem } = useProblem()
+  const { createProblem } = useProblem();
 
   const handleAddTag = (e) => {
     e.preventDefault();
@@ -31,34 +40,44 @@ const PostProblem = () => {
     }
   };
 
+  const handleAddReq = () => {
+    if (reqInput.trim() && requirements.length < 5) {
+      setRequirements([...requirements, reqInput.trim()]);
+      setReqInput("");
+    }
+  };
+
+  const removeReq = (index) => {
+    setRequirements(requirements.filter((_, i) => i !== index));
+  };
+
   const removeTag = (indexToRemove) => {
     setTags(tags.filter((_, index) => index !== indexToRemove));
   };
 
   const onSubmit = async (data) => {
-  const payload = {
-    title: data.title,
-    description: data.description,
-    type: data.type,
-    repoLink: data.repoLink,
-    tags: tags,
-    bounty: problemType === "paid" ? data.bounty : null,
+    const payload = {
+      title: data.title,
+      description: data.description,
+      type: data.type,
+      repoLink: data.repoLink,
+      tags,
+      bounty: problemType === "paid" ? data.bounty : null,
+      requirements: problemType === "paid" ? requirements : [],
+    };
+
+    try {
+      const res = await createProblem(payload);
+      // console.log("Created:", res);
+
+      toast.success("Problem posted successfully");
+
+      // optional: redirect
+      // navigate("/explore");
+    } catch (err) {
+      alert("Failed to post problem ❌");
+    }
   };
-
-  try {
-    const res = await createProblem(payload);
-    console.log("Created:", res);
-
-    toast.success("Problem posted successfully");
-
-    // optional: redirect
-    // navigate("/explore");
-
-  } catch (err) {
-    alert("Failed to post problem ❌");
-  }
-};
-
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.12),transparent_40%),linear-gradient(120deg,#f3ecff,#eef3ff,#ffffff)]">
@@ -71,7 +90,8 @@ const PostProblem = () => {
             Post a Problem
           </h1>
           <p className="text-gray-600 mt-4 text-lg max-w-2xl mx-auto">
-            Describe your technical issue and let our community of developers help you solve it.
+            Describe your technical issue and let our community of developers
+            help you solve it.
           </p>
         </div>
 
@@ -93,7 +113,9 @@ const PostProblem = () => {
                     {...register("type")}
                     className="sr-only"
                   />
-                  <div className={`w-3 h-3 rounded-full ${problemType === type ? type === "free" ? "bg-green-500" : "bg-amber-500" : "bg-gray-300"}`} />
+                  <div
+                    className={`w-3 h-3 rounded-full ${problemType === type ? (type === "free" ? "bg-green-500" : "bg-amber-500") : "bg-gray-300"}`}
+                  />
                   <span className="font-medium capitalize">
                     {type === "free" ? "Free Help" : "Paid Bounty"}
                   </span>
@@ -109,7 +131,9 @@ const PostProblem = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <FiType className="text-indigo-600" />
-                  <label className="block text-gray-800 font-semibold">Problem Title</label>
+                  <label className="block text-gray-800 font-semibold">
+                    Problem Title
+                  </label>
                 </div>
                 <input
                   type="text"
@@ -119,7 +143,7 @@ const PostProblem = () => {
                     required: "Title is required",
                     maxLength: {
                       value: 120,
-                      message: "Title must be less than 120 characters"
+                      message: "Title must be less than 120 characters",
                     },
                   })}
                 />
@@ -135,7 +159,9 @@ const PostProblem = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <MdDescription className="text-indigo-600" />
-                  <label className="block text-gray-800 font-semibold">Detailed Description</label>
+                  <label className="block text-gray-800 font-semibold">
+                    Detailed Description
+                  </label>
                 </div>
                 <textarea
                   rows="6"
@@ -145,7 +171,7 @@ const PostProblem = () => {
                     required: "Description is required",
                     minLength: {
                       value: 50,
-                      message: "Please provide at least 50 characters"
+                      message: "Please provide at least 50 characters",
                     },
                   })}
                 />
@@ -162,7 +188,9 @@ const PostProblem = () => {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <FiDollarSign className="text-amber-600" />
-                    <label className="block text-gray-800 font-semibold">Bounty Amount</label>
+                    <label className="block text-gray-800 font-semibold">
+                      Bounty Amount
+                    </label>
                   </div>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -178,7 +206,7 @@ const PostProblem = () => {
                         required: "Bounty is required for paid problems",
                         min: {
                           value: 100,
-                          message: "Minimum bounty is ₹100"
+                          message: "Minimum bounty is ₹100",
                         },
                       })}
                     />
@@ -199,7 +227,9 @@ const PostProblem = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <MdLink className="text-indigo-600" />
-                  <label className="block text-gray-800 font-semibold">Repository Link</label>
+                  <label className="block text-gray-800 font-semibold">
+                    Repository Link
+                  </label>
                   <span className="text-sm text-gray-500">(Optional)</span>
                 </div>
                 <div className="relative">
@@ -219,10 +249,12 @@ const PostProblem = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <FiTag className="text-indigo-600" />
-                  <label className="block text-gray-800 font-semibold">Tags</label>
+                  <label className="block text-gray-800 font-semibold">
+                    Tags
+                  </label>
                   <span className="text-sm text-gray-500">(Max 5)</span>
                 </div>
-                
+
                 {/* Tags Display */}
                 <div className="flex flex-wrap gap-2 mb-3">
                   {tags.map((tag, index) => (
@@ -262,7 +294,8 @@ const PostProblem = () => {
                 <input
                   type="hidden"
                   {...register("tags", {
-                    required: tags.length === 0 && "At least one tag is required",
+                    required:
+                      tags.length === 0 && "At least one tag is required",
                   })}
                   value={tags.join(",")}
                 />
@@ -276,6 +309,70 @@ const PostProblem = () => {
                   {5 - tags.length} tags remaining
                 </p>
               </div>
+
+              {problemType === "paid" && (
+                <div className="space-y-3">
+                  <label className="block text-gray-800 font-semibold">
+                    Solver Requirements (1–5)
+                  </label>
+
+                  {/* List */}
+                  <div className="flex flex-wrap gap-2">
+                    {requirements.map((r, i) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-full text-sm flex items-center gap-1"
+                      >
+                        {r}
+                        <button
+                          type="button"
+                          onClick={() => removeReq(i)}
+                          className="hover:text-red-600"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Input */}
+                  <div className="flex gap-2">
+                    <input
+                      value={reqInput}
+                      onChange={(e) => setReqInput(e.target.value)}
+                      placeholder="e.g. React + Node experience"
+                      className="flex-1 px-4 py-3 rounded-xl border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddReq}
+                      disabled={requirements.length >= 5 || !reqInput.trim()}
+                      className="px-4 py-3 bg-amber-600 text-white rounded-xl disabled:opacity-50"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  {/* Hidden RHF field */}
+                  <input
+                    type="hidden"
+                    {...register("requirements", {
+                      validate:
+                        problemType !== "paid" ||
+                        (requirements.length >= 1 &&
+                          requirements.length <= 5) ||
+                        "Add 1 to 5 requirements for paid problems",
+                    })}
+                    value={requirements.join(",")}
+                  />
+
+                  {errors.requirements && (
+                    <p className="text-red-500 text-sm">
+                      {errors.requirements.message}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Extra Spacing for Balance */}
               {/* <div className="h-full min-h-[120px] bg-gradient-to-br from-indigo-50/30 to-purple-50/30 rounded-xl p-6 border border-indigo-100/50">
@@ -318,10 +415,12 @@ const PostProblem = () => {
           <div className="text-center">
             <p className="text-sm text-gray-500">
               By posting, you agree to our{" "}
-              <a href="#" className="text-indigo-600 hover:underline font-medium">
+              <a
+                href="#"
+                className="text-indigo-600 hover:underline font-medium"
+              >
                 community guidelines
               </a>
-             
             </p>
           </div>
         </form>

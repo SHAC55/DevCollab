@@ -2,6 +2,8 @@ import problemModel from "../models/problemModel.js";
 import solutionModel from "../models/solutionModel.js";
 import userModel from "../models/userModel.js";
 
+import { sendNotification } from "../utils/sendNotification.js";
+
 export const submitSolution = async (req, res) => {
   try {
     const { description, repoLink } = req.body;
@@ -160,7 +162,7 @@ export const selectTopSolution = async (req, res) => {
   try {
     const { problemId } = req.params;
     const ownerId = req.user.id;
-    const { solutionIds } = req.body; // array of solution IDs
+    const { solutionIds } = req.body;
 
     if (!Array.isArray(solutionIds) || solutionIds.length === 0) {
       return res.status(400).json({
@@ -184,7 +186,6 @@ export const selectTopSolution = async (req, res) => {
       });
     }
 
-    //  Only owner can select top solutions
     if (problem.userId.toString() !== ownerId) {
       return res.status(403).json({
         success: false,
@@ -192,22 +193,38 @@ export const selectTopSolution = async (req, res) => {
       });
     }
 
-    //  Validate solutions belong to this problem
-    const validSolutionsCount = await solutionModel.countDocuments({
+    const solutions = await solutionModel.find({
       _id: { $in: solutionIds },
       problemId: problemId,
     });
 
-    if (validSolutionsCount !== solutionIds.length) {
+    if (solutions.length !== solutionIds.length) {
       return res.status(400).json({
         success: false,
         message: "Some solutions do not belong to this problem",
       });
     }
 
-    //  Save top solutions
+    // Save top solutions
     problem.topSolutions = solutionIds;
     await problem.save();
+
+    // SEND NOTIFICATIONS TO SELECTED SOLUTION OWNERS
+    const actorName = req.user.username || req.user.name || "Problem owner";
+
+    const notifyPromises = solutions.map((sol) => {
+      // avoid notifying yourself
+      if (sol.userId.toString() === ownerId) return null;
+
+      return sendNotification(req.io, {
+        userId: sol.userId,
+        type: "TOP",
+        text: `🏆 Your solution was selected as Top by ${actorName}`,
+        link: `/problem/${problemId}`,
+      });
+    });
+
+    await Promise.all(notifyPromises.filter(Boolean));
 
     return res.status(200).json({
       success: true,
@@ -222,4 +239,5 @@ export const selectTopSolution = async (req, res) => {
     });
   }
 };
+
 

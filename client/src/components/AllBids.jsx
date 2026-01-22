@@ -226,7 +226,7 @@ const AllBids = () => {
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="text-lg font-bold text-gray-900">
-                ${averageBid}
+                 ₹{averageBid}
               </div>
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 text-blue-600" />
@@ -237,7 +237,7 @@ const AllBids = () => {
 
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-lg font-bold text-gray-900">${minBid}</div>
+              <div className="text-lg font-bold text-gray-900">₹{minBid}</div>
               <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
                 <TrendingDown className="w-4 h-4 text-emerald-600" />
               </div>
@@ -247,7 +247,7 @@ const AllBids = () => {
 
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-lg font-bold text-gray-900">${maxBid}</div>
+              <div className="text-lg font-bold text-gray-900">₹{maxBid}</div>
               <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
                 <Award className="w-4 h-4 text-amber-600" />
               </div>
@@ -356,11 +356,11 @@ const AllBids = () => {
 
                   <div className="text-right">
                     <div className="text-lg font-bold text-gray-900">
-                      ${bid.amount.toLocaleString()}
+                      ₹{bid.amount.toLocaleString()}
                     </div>
                     {bid.estimatedDays && (
                       <div className="text-xs text-gray-500">
-                        ${Math.round(bid.amount / bid.estimatedDays)}/day
+                        ₹{Math.round(bid.amount / bid.estimatedDays)}/day
                       </div>
                     )}
                   </div>

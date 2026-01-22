@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { socket } from "../socket";
 import api from "../api/axios";
 
 const AuthContext = createContext(null);
@@ -26,6 +27,13 @@ export const AuthProvider = ({ children }) => {
 
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+  if (user?._id) {
+    socket.emit("join_user", user._id);
+    console.log("Joined personal socket room:", user._id);
+  }
+}, [user]);
 
   // LOGIN
   const login = async (email, password) => {
@@ -68,7 +76,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 🚪 LOGOUT
+  // LOGOUT
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");

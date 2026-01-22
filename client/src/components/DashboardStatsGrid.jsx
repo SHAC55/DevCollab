@@ -46,8 +46,8 @@ const DashboardStatsGrid = () => {
       iconColor: "text-purple-600",
     },
     {
-      title: "Accepted Bids", // ✅ NEW
-      value: stats.acceptedBids, // ✅ from backend
+      title: "Accepted Bids", 
+      value: stats.acceptedBids, 
       icon: BadgeCheck,
       bgColor: "bg-teal-50",
       iconColor: "text-teal-600",
@@ -58,7 +58,7 @@ const DashboardStatsGrid = () => {
       icon: FileText,
       bgColor: "bg-amber-50",
       iconColor: "text-amber-600",
-      route: "/mybids",
+      // route: "/mybids",
     },
   ];
 

@@ -21,6 +21,11 @@ const bidSchema = new mongoose.Schema(
       trim: true,
     },
 
+    estimatedDays: {
+      type: Number,
+      min: 1,
+    },
+
     amount: {
       type: Number,
       required: true,

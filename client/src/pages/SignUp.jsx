@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   Eye,
   EyeOff,
@@ -348,19 +348,19 @@ const SignUp = () => {
             />
             <label htmlFor="terms" className="ml-2 text-sm text-slate-600">
               I agree to the{" "}
-              <a
-                href="#"
+              <NavLink
+                to="/terms&services"
                 className="text-indigo-600 hover:underline font-medium"
               >
                 Terms of Service
-              </a>{" "}
+              </NavLink>{" "}
               and{" "}
-              <a
-                href="#"
+              <NavLink
+                to="/privacypolicy"
                 className="text-indigo-600 hover:underline font-medium"
               >
                 Privacy Policy
-              </a>
+              </NavLink>
             </label>
           </div>
           {errors.terms && (
@@ -380,14 +380,14 @@ const SignUp = () => {
         </button>
 
         {/* Divider */}
-        <div className="mt-6 flex items-center">
+        {/* <div className="mt-6 flex items-center">
           <div className="flex-1 border-t border-slate-200"></div>
           <span className="px-4 text-sm text-slate-500">Or continue with</span>
           <div className="flex-1 border-t border-slate-200"></div>
-        </div>
+        </div> */}
 
         {/* Social Login */}
-        <div className="mt-6 grid grid-cols-2 gap-3">
+        {/* <div className="mt-6 grid grid-cols-2 gap-3">
           <button
             type="button"
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl
@@ -408,7 +408,7 @@ const SignUp = () => {
             </svg>
             LinkedIn
           </button>
-        </div>
+        </div> */}
 
         {/* Login Link */}
         <p className="mt-6 text-center text-sm text-slate-600">

@@ -1,6 +1,7 @@
 import bidsModel from "../models/bidsModel.js";
 import problemModel from "../models/problemModel.js";
 
+import { sendNotification } from "../utils/sendNotification.js";
 
 // apply for bids
 export const applyForBid = async (req, res) => {
@@ -8,12 +9,19 @@ export const applyForBid = async (req, res) => {
     const userId = req.user?.id;
     const { problemId } = req.params;
 
-    const { proposal, amount, link } = req.body;
+    const { proposal, amount, link, estimatedDays } = req.body;
 
     if (!proposal || !amount) {
       return res
         .status(400)
         .json({ success: false, message: "Proposal and amount are required" });
+    }
+
+    if (estimatedDays && estimatedDays < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Estimated days must be at least 1",
+      });
     }
 
     //  Check problem exists
@@ -47,6 +55,7 @@ export const applyForBid = async (req, res) => {
       problemId,
       proposal,
       link,
+      estimatedDays,
       amount,
       status: "pending",
     });
@@ -133,17 +142,24 @@ export const selectBidByProblem = async (req, res) => {
     // Update all bids to rejected
     await bidsModel.updateMany({ problemId }, { $set: { status: "rejected" } });
 
-    //  Accept selected bid
+    // Accept selected bid
     bid.status = "accepted";
     await bid.save();
 
-    //  Mark problem as solved
-    await problemModel.findByIdAndUpdate(problemId, {
-      status: "in-progress",
-    });
-
+    // Mark problem as in-progress
+    problem.status = "in-progress";
     problem.selectedBidder = bid.userId;
     await problem.save();
+
+    //  SEND NOTIFICATION TO SELECTED BIDDER
+    const problemTitle = problem.title || "your project";
+
+    await sendNotification(req.io, {
+      userId: bid.userId, // bidder who got selected
+      type: "BID_SELECTED",
+      text: `🎯 Your bid was selected for "${problemTitle}"`,
+      link: `/problem/${problemId}`,
+    });
 
     return res.status(200).json({
       success: true,
@@ -158,4 +174,3 @@ export const selectBidByProblem = async (req, res) => {
     });
   }
 };
-

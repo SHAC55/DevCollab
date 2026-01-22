@@ -52,13 +52,21 @@ const problemSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["open", "in-progress","failed","solved"],
+      enum: ["open", "in-progress", "failed", "solved"],
       default: "open",
     },
 
     solutionsCount: {
       type: Number,
       default: 0,
+    },
+
+    requirements: {
+      type: [String],
+      validate: [
+        (arr) => arr.length >= 1 && arr.length <= 5,
+        "Requirements must be between 1 and 5 items",
+      ],
     },
 
     // selectedSolution: {
@@ -83,7 +91,7 @@ const problemSchema = new mongoose.Schema(
       deliveryOnTime: { type: Number, min: 1, max: 5 },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("Problem", problemSchema);

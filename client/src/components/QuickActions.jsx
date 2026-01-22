@@ -5,6 +5,7 @@ import {
   MessageSquare,
   BarChart3,
   ClipboardList,
+  User,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -20,14 +21,7 @@ const QuickActions = () => {
       route: "/post-problem",
     },
     {
-      title: "Explore Problems",
-      icon: DollarSign,
-      color: "bg-blue-100",
-      iconColor: "text-blue-600",
-      route: "/explore",
-    },
-    {
-      title: "Manage Problems", // ✅ NEW
+      title: "Manage Problems",
       icon: ClipboardList,
       color: "bg-indigo-100",
       iconColor: "text-indigo-600",
@@ -40,12 +34,19 @@ const QuickActions = () => {
       iconColor: "text-emerald-600",
       route: "/recentchats",
     },
+    // {
+    //   title: "Leaderboard",
+    //   icon: BarChart3,
+    //   color: "bg-amber-100",
+    //   iconColor: "text-amber-600",
+    //   route: "/leaderboard",
+    // },
     {
-      title: "Leaderboard",
-      icon: BarChart3,
-      color: "bg-amber-100",
-      iconColor: "text-amber-600",
-      route: "/leaderboard",
+      title: "Manage Account",
+      icon: User,
+      color: "bg-blue-100",
+      iconColor: "text-blue-600",
+      route: "/account",
     },
   ];
 
@@ -55,8 +56,7 @@ const QuickActions = () => {
         Quick Actions
       </h2>
 
-      {/* auto-fit grid looks better for 5 items */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {quickActions.map((action, index) => (
           <button
             key={index}

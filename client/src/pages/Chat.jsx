@@ -23,38 +23,55 @@ const Chat = () => {
     sendMessage: sendSocketMessage,
   } = useChat();
 
-  // FETCH + JOIN ROOM
+  // ---------------- JOIN ROOM + LOAD MESSAGES ----------------
   useEffect(() => {
     const load = async () => {
       const oldMsgs = await fetchMessages(problemId);
 
-      // fallback if page refreshed
+      // 🔁 Detect other user from LAST message (important)
       if (!navOtherUserId && oldMsgs?.length > 0) {
-        const firstMsg = oldMsgs[0];
+        const lastMsg = oldMsgs[oldMsgs.length - 1];
+
         const other =
-          firstMsg.sender._id === user._id
-            ? firstMsg.receiver
-            : firstMsg.sender;
+          lastMsg.sender._id === user._id ? lastMsg.receiver : lastMsg.sender;
+
         setChatUser(other);
       }
     };
 
     load();
     joinRoom(problemId);
-  }, [problemId]);
+  }, [problemId, user._id]);
 
-  // AUTO SCROLL
+  // ---------------- SET FROM NAVIGATION ----------------
+  useEffect(() => {
+    if (navOtherUserId && navOtherUserName) {
+      setChatUser({ _id: navOtherUserId, username: navOtherUserName });
+    }
+  }, [navOtherUserId, navOtherUserName]);
+
+  // ---------------- UPDATE OTHER USER WHEN NEW MESSAGE COMES ----------------
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+
+      const other =
+        lastMsg.sender._id === user._id ? lastMsg.receiver : lastMsg.sender;
+
+      setChatUser(other);
+    }
+  }, [messages, user._id]);
+
+  // ---------------- AUTO SCROLL ----------------
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // SEND MESSAGE
+  // ---------------- SEND MESSAGE ----------------
   const handleSend = () => {
     if (!message.trim()) return;
 
-    const receiverId = navOtherUserId || chatUser?._id;
-
-    if (!receiverId) {
+    if (!chatUser?._id) {
       console.error("Receiver missing");
       return;
     }
@@ -62,18 +79,19 @@ const Chat = () => {
     sendSocketMessage({
       roomId: problemId,
       senderId: user._id,
-      receiverId,
+      receiverId: chatUser._id,
       text: message,
     });
 
     setMessage("");
   };
 
+  // ---------------- UI ----------------
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
       <div className="p-4 border-b bg-white font-semibold">
-        Chat with {navOtherUserName || chatUser?.username || "User"}
+        Chat with {chatUser?.username || "User"}
       </div>
 
       {/* Messages */}
@@ -88,15 +106,11 @@ const Chat = () => {
             <div
               key={m._id || i}
               className={`max-w-xs p-3 rounded-lg text-sm ${
-                isMe
-                  ? "ml-auto bg-indigo-600 text-white"
-                  : "bg-white border"
+                isMe ? "ml-auto bg-indigo-600 text-white" : "bg-white border"
               }`}
             >
               {!isMe && (
-                <p className="text-xs font-bold mb-1">
-                  {m.sender?.username}
-                </p>
+                <p className="text-xs font-bold mb-1">{m.sender?.username}</p>
               )}
               <p>{m.text}</p>
               <p className="text-[10px] mt-1 opacity-70">
@@ -116,6 +130,7 @@ const Chat = () => {
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type message..."
           className="flex-1 border rounded px-3 py-2 text-sm"
+          onKeyDown={(e) => e.key === "Enter" && handleSend()}
         />
         <button
           onClick={handleSend}

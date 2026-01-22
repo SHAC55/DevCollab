@@ -3,33 +3,44 @@ import userModel from "../models/userModel.js";
 
 export const postProblem = async (req, res) => {
   try {
-    const { title, description, repoLink, tags, type, bounty } = req.body;
+   const { title, description, repoLink, tags, type, bounty, requirements } = req.body;
+
 
     const userId = req.user?.id;
 
     if (
-      !title ||
-      !description ||
-      !type ||
-      !Array.isArray(tags) ||
-      tags.length === 0 ||
-      (type === "paid" && !bounty)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Please fill all required fields",
-      });
-    }
+  !title ||
+  !description ||
+  !type ||
+  !Array.isArray(tags) ||
+  tags.length === 0 ||
+  (type === "paid" && !bounty) ||
+  (type === "paid" &&
+    (!Array.isArray(requirements) ||
+      requirements.length < 1 ||
+      requirements.length > 5))
+) {
+  return res.status(400).json({
+    success: false,
+    message:
+      type === "paid"
+        ? "Paid problems require bounty and 1–5 requirements"
+        : "Please fill all required fields",
+  });
+}
+
 
     const newProblem = await problemModel.create({
-      userId,
-      title: title.trim(),
-      description: description.trim(),
-      repoLink: repoLink?.trim(),
-      tags,
-      type,
-      bounty: type === "paid" ? bounty : undefined,
-    });
+  userId,
+  title: title.trim(),
+  description: description.trim(),
+  repoLink: repoLink?.trim(),
+  tags,
+  type,
+  bounty: type === "paid" ? bounty : undefined,
+  requirements: type === "paid" ? requirements : [],
+});
+
 
     return res.status(201).json({
       success: true,

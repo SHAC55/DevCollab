@@ -13,6 +13,10 @@ import chatModel from "./models/chatModel.js";
 import leaderBoardRouter from "./routes/leaderboard.routes.js";
 import dashRouter from "./routes/dashboard.routes.js";
 import chatRouter from "./routes/chat.routes.js";
+import { type } from "os";
+import notifyRouter from "./routes/notification.routes.js";
+import { sendNotification } from "./utils/sendNotification.js";
+import notificationModel from "./models/notificationModel.js";
 
 dotenv.config();
 
@@ -50,6 +54,11 @@ app.get("/", (req, res) => {
   res.send("DevCollab server is running!");
 });
 
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 app.use("/api/auth", authRouter);
 app.use("/api/problem", problemRouter);
 app.use("/api/solution", solutionRouter);
@@ -57,44 +66,59 @@ app.use("/api/bid", bidRouter);
 app.use("/api/leaderboard", leaderBoardRouter);
 app.use("/api/dashboard", dashRouter);
 app.use("/api/chat", chatRouter);
+app.use("/api/notification", notifyRouter);
 
 // ================= SOCKET LOGIC =================
 
-// ================= SOCKET LOGIC =================
-
+// For chat
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  // console.log("User connected:", socket.id);
 
   socket.on("join_room", (roomId) => {
     socket.join(roomId);
-    console.log("Joined room:", roomId);
+    // console.log("Joined room:", roomId);
   });
 
-  socket.on("send_message", async (data) => {
-    try {
-      const savedMsg = await chatModel.create({
-        roomId: data.roomId,
-        sender: data.senderId,
-        receiver: data.receiverId,
-        text: data.text,
-      });
+ socket.on("send_message", async (data) => {
+  try {
+    const savedMsg = await chatModel.create({
+      roomId: data.roomId,
+      sender: data.senderId,
+      receiver: data.receiverId,
+      text: data.text,
+    });
 
-      // populate sender for frontend
-      const populatedMsg = await savedMsg.populate(
-        "sender receiver",
-        "username",
-      );
+    const populatedMsg = await savedMsg.populate(
+      "sender receiver",
+      "username"
+    );
 
-      io.to(data.roomId).emit("receive_message", populatedMsg);
-    } catch (err) {
-      console.error("Socket message save error:", err);
-    }
-  });
+    // send message to room
+    io.to(data.roomId).emit("receive_message", populatedMsg);
+
+    // 🔔 CREATE NOTIFICATION IN DB
+    const notification = await notificationModel.create({
+      user: data.receiverId,
+      type: "MESSAGE",
+      text: `💬 New message from ${populatedMsg.sender.username}`,
+      link: `/chat/${data.roomId}`,
+    });
+
+    // 🔔 REAL-TIME NOTIFICATION TO RECEIVER
+    io.to(data.receiverId).emit("new_notification", notification);
+
+  } catch (err) {
+    console.error("Socket message save error:", err);
+  }
+});
+
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    // console.log("User disconnected:", socket.id);
   });
 });
+
+//
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

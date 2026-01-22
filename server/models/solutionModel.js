@@ -16,7 +16,7 @@ const reactionSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { _id: false } // no separate id needed for each reaction
+  { _id: false }, // no separate id needed for each reaction
 );
 
 const solutionSchema = new mongoose.Schema(
@@ -35,14 +35,18 @@ const solutionSchema = new mongoose.Schema(
     repoLink: { type: String, trim: true },
 
     // reactions
-    reactions: [reactionSchema],
+    reactions: {
+      type: [reactionSchema],
+      default: [],
+    },
+
     likes: { type: Number, default: 0 },
     dislikes: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export default mongoose.model("Solution", solutionSchema);
