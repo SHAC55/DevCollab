@@ -23,6 +23,8 @@ import RecentChats from "./pages/RecentChats";
 import Notify from "./pages/Notify";
 import TermServices from "./pages/TermServices";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const App = () => {
   return (
@@ -36,6 +38,8 @@ const App = () => {
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/terms&services" element={<TermServices />} />
         <Route path="/privacypolicy" element={<PrivacyPolicy />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         {/* -------- PROTECTED ROUTES -------- */}
         <Route element={<ProtectedRoute />}>
