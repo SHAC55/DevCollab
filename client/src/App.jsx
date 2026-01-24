@@ -1,8 +1,9 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 
+import { useAuth } from "./context/authContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import Home from "./pages/Home";
@@ -27,15 +28,33 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
 const App = () => {
+  const { token, loading } = useAuth();
+
+  // wait until token is checked (important on refresh)
+  if (loading) return null; // or loader
+
   return (
     <>
       <ToastContainer />
 
       <Routes>
         {/* -------- PUBLIC ROUTES -------- */}
-        <Route path="/" element={<Home />} />
-        <Route path="/sign-in" element={<SignIn />} />
-        <Route path="/sign-up" element={<SignUp />} />
+
+        <Route
+          path="/"
+          element={token ? <Navigate to="/dashboard" replace /> : <Home />}
+        />
+
+        <Route
+          path="/sign-in"
+          element={token ? <Navigate to="/dashboard" replace /> : <SignIn />}
+        />
+
+        <Route
+          path="/sign-up"
+          element={token ? <Navigate to="/dashboard" replace /> : <SignUp />}
+        />
+
         <Route path="/terms&services" element={<TermServices />} />
         <Route path="/privacypolicy" element={<PrivacyPolicy />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -51,6 +70,7 @@ const App = () => {
 
           <Route path="/problem/:id" element={<ProblemDetails />} />
           <Route path="/problems/:id" element={<ProblemDetails />} />
+
           <Route
             path="/problems/:id/submit-solution"
             element={<SolutionSubmission />}
