@@ -64,7 +64,7 @@ const problemSchema = new mongoose.Schema(
     requirements: {
       type: [String],
       validate: [
-        (arr) => arr.length >= 1 && arr.length <= 5,
+        (arr) => arr.length >= 0 && arr.length <= 5,
         "Requirements must be between 1 and 5 items",
       ],
     },
